@@ -11,6 +11,36 @@ test_that("createWorkflowProjectGroups splits projects by dataset type", {
   expect_equal(groups$invivo, c("PDO1", "PDX1"))
 })
 
+test_that("computeCoverageForGroup pools expression samples across group projects", {
+  feature_map <- list(
+    CCLE = c("M1", "M2", "M3"),
+    GDSC = c("M4", "M5"),
+    PDC1 = c("M6")
+  )
+  drug_map <- list(
+    CCLE = c("M4", "M5"),
+    GDSC = c("M2", "M3"),
+    PDC1 = c("Z1")
+  )
+
+  out <- computeCoverageForGroup(
+    project_names = c("CCLE", "GDSC", "PDC1"),
+    drug_names = "Paclitaxel",
+    tumor_types = "breast cancer",
+    db_path = tempfile(fileext = ".sqlite"),
+    con = NULL,
+    min_overlap_per_study = 2L,
+    min_studies = 2L,
+    feature_sample_resolver = function(project_name, tumor_type) feature_map[[project_name]],
+    drug_sample_resolver = function(project_name, drug_name, tumor_type) drug_map[[project_name]]
+  )
+
+  expect_equal(out$coverage$overlap_n, c(2L, 2L, 0L))
+  expect_equal(out$coverage$expr_project_count, c(1L, 1L, 0L))
+  expect_equal(out$candidates_runtime$eligible_project_count, 2L)
+  expect_equal(sort(out$candidates_runtime$eligible_projects[[1]]), c("CCLE", "GDSC"))
+})
+
 test_that("mapTumorTypeToTcgaCode maps common tumor names", {
   expect_equal(mapTumorTypeToTcgaCode("breast cancer"), "TCGA-BRCA")
   expect_equal(mapTumorTypeToTcgaCode("lung cancer"), "TCGA-LUAD")

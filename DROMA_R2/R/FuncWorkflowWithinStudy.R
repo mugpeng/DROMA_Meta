@@ -70,7 +70,7 @@ runWithinStudyScreen <- function(group_set,
                                  cores = 1L,
                                  preloaded = TRUE,
                                  verbose = FALSE,
-                                 batch_fun = DROMA.R::batchFindSignificantFeatures) {
+                                 batch_fun = batchFindSignificantFeatures) {
   if (!inherits(group_set, "MultiDromaSet")) {
     stop("group_set must be a MultiDromaSet")
   }

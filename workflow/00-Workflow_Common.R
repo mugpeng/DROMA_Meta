@@ -75,6 +75,13 @@ source_dir <- function(path) {
   invisible(lapply(files, source, local = FALSE))
 }
 
+# Prefer the repository copy of key DROMA.R helpers so workflow validation uses
+# the current workspace code instead of an older installed package build.
+source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairDataLoading.R"), local = FALSE)
+source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairDataPairing.R"), local = FALSE)
+source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairMetaAnalysis.R"), local = FALSE)
+source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairBatchFeature.R"), local = FALSE)
+
 # Load workflow-specific helper functions.
 source_dir(file.path(droma_r2_root, "R"))
 
