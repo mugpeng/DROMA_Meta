@@ -1,0 +1,5 @@
+others/
+project.Rproj
+workflow/Output/
+.Rproj.user/
+.DS_Store
