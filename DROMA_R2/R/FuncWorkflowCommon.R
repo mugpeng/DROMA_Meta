@@ -36,6 +36,33 @@ buildWorkflowConfig <- function(repo_root,
   )
 }
 
+#' Subset a workflow MultiDromaSet to selected projects
+#'
+#' @description Creates a new \code{MultiDromaSet} containing only the selected
+#'   workflow projects. This keeps the workflow implementation aligned with
+#'   \code{DROMA.Set} objects and allows downstream code to reuse
+#'   \code{DROMA.R::batchFindSignificantFeatures()} directly.
+#' @param group_set A \code{MultiDromaSet} object.
+#' @param project_names Character vector of project names to keep.
+#' @return A \code{MultiDromaSet} restricted to the requested projects.
+#' @export
+subsetWorkflowGroupSet <- function(group_set, project_names) {
+  if (!inherits(group_set, "MultiDromaSet")) {
+    stop("group_set must be a MultiDromaSet")
+  }
+
+  project_names <- unique(as.character(project_names))
+  keep_projects <- intersect(project_names, names(group_set@DromaSets))
+  if (length(keep_projects) == 0) {
+    stop("No matching projects found in group_set")
+  }
+
+  DROMA.Set::createMultiDromaSetFromObjects(
+    group_set@DromaSets[keep_projects],
+    project_names = keep_projects
+  )
+}
+
 createWorkflowProjectGroups <- function(project_anno, groups = NULL) {
   if (!is.data.frame(project_anno)) {
     stop("project_anno must be a data.frame")
@@ -82,16 +109,17 @@ createWorkflowGroupSet <- function(db_path, con, project_names) {
 
 .empty_within_study <- function() {
   data.table::data.table(
-    project_name = character(),
+    project_scope = character(),
     drug = character(),
     tumor_type = character(),
     gene = character(),
     n_total = integer(),
-    n_high = integer(),
-    n_low = integer(),
     p_value = numeric(),
     effect_size = numeric(),
-    q_value = numeric()
+    q_value = numeric(),
+    n_datasets = integer(),
+    eligible_project_count = integer(),
+    eligible_projects = character()
   )
 }
 

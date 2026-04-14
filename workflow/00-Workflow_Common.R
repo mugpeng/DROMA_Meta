@@ -1,3 +1,9 @@
+# ============================================================================
+# 00-Workflow_Common.R
+# Shared workflow bootstrap, configuration, and stage I/O helpers
+# This script is intentionally sourced by every numbered workflow step.
+# ============================================================================
+
 get_workflow_root <- function() {
   cmd_args <- commandArgs(trailingOnly = FALSE)
   file_arg <- grep("^--file=", cmd_args, value = TRUE)
@@ -33,6 +39,8 @@ get_current_script_dir <- function(default_name) {
 }
 
 workflow_root <- get_workflow_root()
+
+# Walk upward until a DROMA repository root is found.
 find_repo_root <- function(start_dir) {
   current <- normalizePath(start_dir, mustWork = TRUE)
   repeat {
@@ -67,8 +75,10 @@ source_dir <- function(path) {
   invisible(lapply(files, source, local = FALSE))
 }
 
+# Load workflow-specific helper functions.
 source_dir(file.path(droma_r2_root, "R"))
 
+# Analysis configuration for the current workflow run.
 workflow_config <- buildWorkflowConfig(
   repo_root = repo_root,
   tcga_dir = "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts",
@@ -82,12 +92,14 @@ workflow_config <- buildWorkflowConfig(
 
 dir.create(workflow_config$output_base, recursive = TRUE, showWarnings = FALSE)
 
+# Save an intermediate stage object under workflow/Output/<stage>/.
 save_stage <- function(object, subdir, filename) {
   out_dir <- file.path(workflow_config$output_base, subdir)
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
   saveRDS(object, file = file.path(out_dir, filename))
 }
 
+# Read a previously saved stage object.
 read_stage <- function(subdir, filename) {
   readRDS(file.path(workflow_config$output_base, subdir, filename))
 }

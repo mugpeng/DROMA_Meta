@@ -7,9 +7,9 @@ Authors@R:
 Description: A workflow-oriented extension package for grouped preclinical
     biomarker screening across CellLine, PDC, PDO, and PDX datasets. The
     package reuses DROMA.Set and DROMA.R data access and clinical validation
-    helpers, and adds stage-wise utilities for coverage filtering, within-study
-    Wilcoxon screening, grouped meta-analysis, TCGA translation filtering, and
-    workflow result assembly.
+    helpers, and adds stage-wise utilities for coverage filtering, grouped
+    Spearman screening, workflow meta formatting, TCGA translation filtering,
+    and workflow result assembly.
 License: MPL-2 + file LICENSE
 Encoding: UTF-8
 LazyData: true

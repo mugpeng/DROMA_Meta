@@ -1,3 +1,44 @@
+.runParallelRows <- function(X, FUN, cores = 1L, show_progress = FALSE) {
+  X <- as.list(X)
+  cores <- max(1L, as.integer(cores))
+
+  if (length(X) == 0) {
+    return(list())
+  }
+  if (cores <= 1L) {
+    return(lapply(X, FUN))
+  }
+  if (!requireNamespace("future", quietly = TRUE) ||
+      !requireNamespace("furrr", quietly = TRUE)) {
+    return(lapply(X, FUN))
+  }
+
+  old_size <- getOption("future.globals.maxSize")
+  options(future.globals.maxSize = 2 * 1024^3)
+  if (.Platform$OS.type == "unix") {
+    future::plan(future::multicore, workers = cores)
+  } else {
+    future::plan(future::multisession, workers = cores)
+  }
+  on.exit({
+    future::plan(future::sequential)
+    options(future.globals.maxSize = old_size)
+  }, add = TRUE)
+
+  if (show_progress && requireNamespace("progressr", quietly = TRUE)) {
+    progressr::with_progress({
+      p <- progressr::progressor(steps = length(X))
+      furrr::future_map(X, function(x) {
+        out <- FUN(x)
+        p()
+        out
+      }, .options = furrr::furrr_options(seed = TRUE))
+    })
+  } else {
+    furrr::future_map(X, FUN, .options = furrr::furrr_options(seed = TRUE))
+  }
+}
+
 mapTumorTypeToTcgaCode <- function(tumor_type) {
   tumor_map <- c(
     "breast cancer" = "TCGA-BRCA",
@@ -95,7 +136,9 @@ runTcgaTranslationFilter <- function(meta_candidates,
                                      tcga_dir,
                                      feature_type = "mRNA",
                                      fdr_t = 0.1,
-                                     es_t = 0.1) {
+                                     es_t = 0.1,
+                                     cores = 1L,
+                                     show_progress = FALSE) {
   meta_candidates <- data.table::as.data.table(meta_candidates)
   if (nrow(meta_candidates) == 0) {
     return(meta_candidates[, `:=`(tcga_p_value = numeric(), tcga_q_value = numeric(), tcga_supported = logical())])
@@ -129,7 +172,7 @@ runTcgaTranslationFilter <- function(meta_candidates,
   })
   names(expr_cache) <- names(group_set@DromaSets)
 
-  rows <- lapply(seq_len(nrow(meta_candidates)), function(i) {
+  rows <- .runParallelRows(seq_len(nrow(meta_candidates)), function(i) {
     row <- meta_candidates[i]
     model_values <- numeric()
     for (project_name in names(expr_cache)) {
@@ -154,7 +197,7 @@ runTcgaTranslationFilter <- function(meta_candidates,
       name = row$name[[1]],
       tcga_p_value = p_value
     )
-  })
+  }, cores = cores, show_progress = show_progress)
 
   tcga_dt <- data.table::rbindlist(rows, fill = TRUE)
   tcga_dt[, tcga_q_value := stats::p.adjust(tcga_p_value, method = "BH")]
