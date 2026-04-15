@@ -5,7 +5,8 @@ suppressPackageStartupMessages(library(DROMA.Meta))
 suppressPackageStartupMessages(library(DROMA.Set))
 suppressPackageStartupMessages(library(DROMA.R))
 
-project_root <- normalizePath(getwd(), mustWork = TRUE)
+project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+# project_root <- normalizePath(getwd(), mustWork = TRUE)
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
 # Driver-level input and output locations. Keep these runtime choices here so
@@ -24,7 +25,6 @@ ctrdb_path <- defaults$ctrdb_path
 tcga_rna_counts_dir <- defaults$tcga_rna_counts_dir
 gene_probe_map_path <- defaults$gene_probe_map_path
 output_base <- defaults$output_base
-override <- FALSE
 
 feature2_type <- "mRNA"
 data_type <- "all"
@@ -78,7 +78,7 @@ for (drug in drugs) {
       tcga_rna_counts_dir = tcga_rna_counts_dir,
       gene_probe_map_path = gene_probe_map_path,
       output_base = output_base,
-      override = override,
+      override = F,
       verbose = TRUE
     )
     result_id <- result_id + 1L
