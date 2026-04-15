@@ -7,7 +7,6 @@ library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
 source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncValidCheck.R", local = FALSE)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
 drug <- "Paclitaxel"
@@ -34,71 +33,23 @@ project_anno <- DROMA.Set::listDROMAProjects()
 drug_anno <- getDROMAAnnotation("drug")
 sample_anno <- getDROMAAnnotation("sample")
 
-valid_inputs <- getValidDrugsAndTumorTypes(
-  project_anno = project_anno,
-  drug_anno = drug_anno,
-  sample_anno = sample_anno,
-  cell_n_datasets_t = 3,
-  pdcpdx_n_datasets_t = 2
-)
-valid_drugs <- valid_inputs$valid_drugs
-valid_tumor_types <- valid_inputs$valid_tumor_types
-
-if (!drug %in% valid_drugs) {
-  stop("drug does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", drug, call. = FALSE)
-}
-if (!tumor_type %in% valid_tumor_types) {
-  stop("tumor_type does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", tumor_type, call. = FALSE)
-}
-
 cell_names_all <- project_anno[project_anno$dataset_type %in% c("CellLine", "PDC"), ]$project_name
 cell_drug_projects <- unique(as.character(
   drug_anno$ProjectID[!is.na(drug_anno$DrugName) & drug_anno$DrugName == drug]
 ))
-cell_tumor_projects <- unique(as.character(
-  sample_anno$ProjectID[!is.na(sample_anno$TumorType) & sample_anno$TumorType == tumor_type]
-))
-cell_names <- intersect(cell_names_all, intersect(cell_drug_projects, cell_tumor_projects))
-if (length(cell_names) < 3) {
-  stop(
-    sprintf(
-      "cell_sets eligible projects for drug '%s' and tumor_type '%s' < 3; cannot satisfy n_datasets_t",
-      drug, tumor_type
-    ),
-    call. = FALSE
-  )
-}
+
 cell_sets <- createMultiDromaSetFromAllProjects(
   db_path = db_path,
-  include_projects = cell_names,
+  include_projects = cell_names_all,
   con = con
 )
 
 pdcpdx_names_all <- project_anno[project_anno$dataset_type %in% c("PDO", "PDX"), ]$project_name
-pdcpdx_drug_projects <- unique(as.character(
-  drug_anno$ProjectID[!is.na(drug_anno$DrugName) & drug_anno$DrugName == drug]
-))
-pdcpdx_tumor_projects <- unique(as.character(
-  sample_anno$ProjectID[!is.na(sample_anno$TumorType) & sample_anno$TumorType == tumor_type]
-))
-pdcpdx_names <- intersect(pdcpdx_names_all, intersect(pdcpdx_drug_projects, pdcpdx_tumor_projects))
-if (length(pdcpdx_names) < 2) {
-  stop(
-    sprintf(
-      "pdcpdx_sets eligible projects for drug '%s' and tumor_type '%s' < 2; cannot satisfy n_datasets_t",
-      drug, tumor_type
-    ),
-    call. = FALSE
-  )
-}
 pdcpdx_sets <- createMultiDromaSetFromAllProjects(
   db_path = db_path,
-  include_projects = pdcpdx_names,
+  include_projects = pdcpdx_names_all,
   con = con
 )
-
-writeLines(cell_names, file.path(output_dir, "cell_sets_projects.txt"))
-writeLines(pdcpdx_names, file.path(output_dir, "pdcpdx_sets_projects.txt"))
 
 cat("  ", drug, " on cell_sets (", feature2_type, ")...\n", sep = "")
 batch_cell <- batchFindSignificantFeatures(
