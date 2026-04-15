@@ -4,9 +4,9 @@
 # ============================================================================
 
 library(data.table)
+suppressPackageStartupMessages(library(DROMA.Meta))
 library(DROMA.Set)
 library(DROMA.R)
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
 
 ctrdb_path <- "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
 drug <- "Paclitaxel"

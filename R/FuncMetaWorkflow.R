@@ -110,7 +110,7 @@ buildDrugTumorGrid <- function(valid_drugs_csv, valid_tumor_types_csv) {
 #' @param clinical_es_t Clinical effect-size threshold.
 #' @param clinical_P_t Clinical p-value threshold.
 #' @param clinical_n_datasets_t Clinical dataset-count threshold.
-#' @param droma_db_path Path to the DROMA SQLite database.
+#' @param db_path Path to the DROMA SQLite database.
 #' @param ctrdb_path Path to the CTRDB SQLite database.
 #' @param tcga_rna_counts_dir Directory containing TCGA/TARGET counts.
 #' @param gene_probe_map_path Path to the probe-map file.
@@ -118,29 +118,29 @@ buildDrugTumorGrid <- function(valid_drugs_csv, valid_tumor_types_csv) {
 #' @param verbose Logical, whether to print progress messages.
 #' @return A one-row `data.table` summarizing workflow status and counts.
 #' @export
-runMetaWorkflowOne <- function(drug,
-                               tumor_type,
-                               feature2_type = "mRNA",
-                               data_type = "all",
-                               cores = 3,
-                               cell_min_intersected_cells = 20,
-                               pdcpdx_min_intersected_cells = 8,
-                               cell_es_t = 0.1,
-                               cell_P_t = 0.05,
-                               cell_n_datasets_t = 3,
-                               pdcpdx_es_t = 0.1,
-                               pdcpdx_P_t = 0.05,
-                               pdcpdx_n_datasets_t = 2,
-                               tcga_ad_p_t = 0.01,
-                               clinical_es_t = 0.1,
-                               clinical_P_t = 0.05,
-                               clinical_n_datasets_t = NULL,
-                               droma_db_path = getMetaWorkflowDefaults()$droma_db_path,
-                               ctrdb_path = getMetaWorkflowDefaults()$ctrdb_path,
-                               tcga_rna_counts_dir = getMetaWorkflowDefaults()$tcga_rna_counts_dir,
-                               gene_probe_map_path = getMetaWorkflowDefaults()$gene_probe_map_path,
-                               output_base = getMetaWorkflowDefaults()$output_base,
-                               verbose = TRUE) {
+runMetaWorkflow <- function(drug,
+                            tumor_type,
+                            feature2_type = "mRNA",
+                            data_type = "all",
+                            cores = 3,
+                            cell_min_intersected_cells = 20,
+                            pdcpdx_min_intersected_cells = 8,
+                            cell_es_t = 0.1,
+                            cell_P_t = 0.05,
+                            cell_n_datasets_t = 3,
+                            pdcpdx_es_t = 0.1,
+                            pdcpdx_P_t = 0.05,
+                            pdcpdx_n_datasets_t = 2,
+                            tcga_ad_p_t = 0.01,
+                            clinical_es_t = 0.1,
+                            clinical_P_t = 0.05,
+                            clinical_n_datasets_t = NULL,
+                            db_path = getMetaWorkflowDefaults()$droma_db_path,
+                            ctrdb_path = getMetaWorkflowDefaults()$ctrdb_path,
+                            tcga_rna_counts_dir = getMetaWorkflowDefaults()$tcga_rna_counts_dir,
+                            gene_probe_map_path = getMetaWorkflowDefaults()$gene_probe_map_path,
+                            output_base = getMetaWorkflowDefaults()$output_base,
+                            verbose = TRUE) {
   output_dir <- getMetaWorkflowOutputDir(
     drug = drug,
     tumor_type = tumor_type,
@@ -162,7 +162,7 @@ runMetaWorkflowOne <- function(drug,
         cat("\n=== 01: Batch Preclinical ===\n")
       }
 
-      con <- connectDROMADatabase(droma_db_path)
+      con <- connectDROMADatabase(db_path)
       on.exit(try(close(con), silent = TRUE), add = TRUE)
 
       project_anno <- listDROMAProjects()
@@ -172,7 +172,7 @@ runMetaWorkflowOne <- function(drug,
         "project_name"
       ]
       cell_sets <- createMultiDromaSetFromAllProjects(
-        db_path = droma_db_path,
+        db_path = db_path,
         include_projects = cell_names_all,
         con = con
       )
@@ -182,7 +182,7 @@ runMetaWorkflowOne <- function(drug,
         "project_name"
       ]
       pdcpdx_sets <- createMultiDromaSetFromAllProjects(
-        db_path = droma_db_path,
+        db_path = db_path,
         include_projects = pdcpdx_names_all,
         con = con
       )
@@ -250,7 +250,7 @@ runMetaWorkflowOne <- function(drug,
       }
 
       ccle_set <- createMultiDromaSetFromAllProjects(
-        db_path = droma_db_path,
+        db_path = db_path,
         include_projects = "CCLE",
         con = con
       )
@@ -376,64 +376,4 @@ runMetaWorkflowOne <- function(drug,
   )
 
   result
-}
-
-#' Run the Meta Workflow Over All Valid Combinations
-#'
-#' @description Builds the Cartesian product of valid drugs and tumor types, runs
-#' the full workflow for each pair, and writes an optional batch summary table.
-#' @param valid_drugs_csv Path to `valid_drugs.csv`.
-#' @param valid_tumor_types_csv Path to `valid_tumor_types.csv`.
-#' @param output_base Base directory for workflow outputs.
-#' @param summary_csv Optional output path for the batch summary table.
-#' @param verbose Logical, whether to print progress messages.
-#' @param ... Additional arguments forwarded to `runMetaWorkflowOne()`.
-#' @return A `data.table` summarizing all combinations.
-#' @export
-runMetaWorkflowBatch <- function(valid_drugs_csv,
-                                 valid_tumor_types_csv,
-                                 output_base = getMetaWorkflowDefaults()$output_base,
-                                 summary_csv = NULL,
-                                 verbose = TRUE,
-                                 ...) {
-  grid <- buildDrugTumorGrid(
-    valid_drugs_csv = valid_drugs_csv,
-    valid_tumor_types_csv = valid_tumor_types_csv
-  )
-
-  if (verbose) {
-    cat("\n============================================================\n")
-    cat("Batch meta workflow\n")
-    cat("valid_drugs_csv:", valid_drugs_csv, "\n")
-    cat("valid_tumor_types_csv:", valid_tumor_types_csv, "\n")
-    cat("total combinations:", nrow(grid), "\n")
-  }
-
-  results <- vector("list", nrow(grid))
-  for (i in seq_len(nrow(grid))) {
-    drug <- as.character(grid$drug[[i]])
-    tumor_type <- as.character(grid$tumor_type[[i]])
-
-    if (verbose) {
-      cat("\n------------------------------------------------------------\n")
-      cat(sprintf("[%d/%d] %s | %s\n", i, nrow(grid), drug, tumor_type))
-    }
-
-    results[[i]] <- runMetaWorkflowOne(
-      drug = drug,
-      tumor_type = tumor_type,
-      output_base = output_base,
-      verbose = verbose,
-      ...
-    )
-  }
-
-  summary_dt <- data.table::rbindlist(results, fill = TRUE)
-
-  if (!is.null(summary_csv) && nzchar(summary_csv)) {
-    dir.create(dirname(summary_csv), showWarnings = FALSE, recursive = TRUE)
-    data.table::fwrite(summary_dt, summary_csv)
-  }
-
-  summary_dt
 }

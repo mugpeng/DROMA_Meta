@@ -4,9 +4,9 @@
 # ============================================================================
 
 library(data.table)
+suppressPackageStartupMessages(library(DROMA.Meta))
 library(DROMA.Set)
 library(DROMA.R)
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
 
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"

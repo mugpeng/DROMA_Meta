@@ -3,10 +3,8 @@
 # Export valid drugs and tumor types that satisfy project-count thresholds
 # ============================================================================
 
-source("R/FuncHelper.R")
-source("R/FuncValidCheck.R")
-
 library(data.table)
+suppressPackageStartupMessages(library(DROMA.Meta))
 library(DROMA.Set)
 library(DROMA.R)
 

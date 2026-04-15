@@ -22,15 +22,13 @@ if (length(missing_files) > 0) {
 }
 
 for (path in workflow_files) {
+  lines <- readLines(path, warn = FALSE)
+  stopifnot(any(grepl("library(DROMA.Meta)", lines, fixed = TRUE)))
+  stopifnot(!any(grepl("source(", lines, fixed = TRUE)))
   parse(file = path)
 }
 
-source(file.path(root_dir, "R", "FuncHelper.R"), local = FALSE)
-source(file.path(root_dir, "R", "FuncValidCheck.R"), local = FALSE)
-source(file.path(root_dir, "R", "FuncTcgaAD.R"), local = FALSE)
-source(file.path(root_dir, "R", "FuncMetaWorkflow.R"), local = FALSE)
-
-stopifnot(exists("runMetaWorkflowBatch", mode = "function"))
-stopifnot(exists("runMetaWorkflowOne", mode = "function"))
+suppressPackageStartupMessages(library(DROMA.Meta))
+stopifnot(exists("runMetaWorkflow", mode = "function"))
 
 cat("workflow smoke test passed\n")

@@ -4,10 +4,9 @@
 # ============================================================================
 
 library(data.table)
+suppressPackageStartupMessages(library(DROMA.Meta))
 library(DROMA.Set)
 library(DROMA.R)
-
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncTcgaAD.R", local = FALSE)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
 drug <- "Paclitaxel"
