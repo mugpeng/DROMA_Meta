@@ -14,8 +14,8 @@ tumor_type <- "breast cancer"
 data_type <- "all"
 cores <- 3
 
-clinical_es_t <- 0.05
-clinical_P_t <- 0.1
+clinical_es_t <- 0.1
+clinical_P_t <- 0.05
 clinical_n_datasets_t <- NULL
 
 output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
@@ -24,6 +24,10 @@ output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
 cat("\n=== 04: Clinical Validation ===\n")
+
+# Need DROMA database connection for annotation fetching used internally
+droma_path <- "/Users/peng/Desktop/Project/DROMA/Data/DROMA.sqlite"
+connectDROMADatabase(droma_path)
 
 selected_genes_ad_filtered <- fread(file.path(output_dir, "selected_genes_ad_filtered.csv"))
 
@@ -65,13 +69,23 @@ if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
   if (nrow(final_biomarkers) > 0) {
     final_biomarkers$drug <- drug
     final_biomarkers$tumor_type <- tumor_type
-    final_biomarkers$cell_supported <- final_biomarkers$name %in% mRNA_cell_sig$name
+
+    # Consolidate direction columns
+    dir_cols <- grep("direction", names(final_biomarkers), value = TRUE)
+    if (length(dir_cols) > 0) {
+      final_biomarkers$direction <- final_biomarkers[[tail(dir_cols, 1)]]
+      # Remove other direction columns
+      cols_to_remove <- setdiff(dir_cols, "direction")
+      if (length(cols_to_remove) > 0) {
+        final_biomarkers[, cols_to_remove] <- NULL
+      }
+    }
   }
 } else {
   final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
 }
 
-fwrite(clinical_batch, file.path(output_dir, "clinical_batch_mRNA.csv"))
+# fwrite(clinical_batch, file.path(output_dir, "clinical_batch_mRNA.csv"))
 fwrite(clinical_sig, file.path(output_dir, "clinical_sig_mRNA.csv"))
 fwrite(final_biomarkers, file.path(output_dir, "final_biomarkers.csv"))
 

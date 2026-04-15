@@ -60,4 +60,6 @@ fwrite(ad_stats, file.path(output_dir, "selected_genes_ad_stats.csv"))
 
 cat(sprintf("  OK selected_genes_ad_stats: %d biomarkers\n", nrow(ad_stats)))
 
-selected_genes_ad_filtered <- fread(file.path(output_dir, "selected_genes_ad_filtered.csv"))
+selected_genes_ad_filtered <- ad_stats[get("ccle_vs_tcga_concordant") == TRUE]
+fwrite(selected_genes_ad_filtered, file.path(output_dir, "selected_genes_ad_filtered.csv"))
+cat(sprintf("  OK selected_genes_ad_filtered: %d concordant biomarkers\n", nrow(selected_genes_ad_filtered)))
