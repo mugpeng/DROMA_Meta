@@ -35,12 +35,24 @@ fwrite(merged, file.path(workflow_config$output_base, "08-summary", "final_precl
 if (length(clinical_results) > 0) {
   clinical_merged <- rbindlist(clinical_results, fill = TRUE, idcol = "drug")
   fwrite(clinical_merged, file.path(workflow_config$output_base, "08-summary", "final_clinical_validation.csv"))
+
+  clinical_supported_dt <- if ("clinical_supported" %in% colnames(clinical_merged)) {
+    clinical_merged[clinical_merged$clinical_supported == TRUE, ]
+  } else {
+    clinical_merged[0, ]
+  }
+  retained_dt <- if ("retained" %in% colnames(clinical_merged)) {
+    clinical_merged[clinical_merged$retained == TRUE, ]
+  } else {
+    clinical_merged[0, ]
+  }
+
   fwrite(
-    clinical_merged[clinical_supported == TRUE],
+    clinical_supported_dt,
     file.path(workflow_config$output_base, "08-summary", "final_clinically_supported_candidates.csv")
   )
   fwrite(
-    clinical_merged[retained == TRUE],
+    retained_dt,
     file.path(workflow_config$output_base, "08-summary", "final_retained_candidates.csv")
   )
 }

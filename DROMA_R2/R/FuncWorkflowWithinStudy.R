@@ -35,6 +35,26 @@
   meta_dt[, ..needed_cols]
 }
 
+.resolveWorkflowFeatureNames <- function(group_set, projects, feature_type) {
+  db_path <- NULL
+  if (!is.null(group_set@db_info[["db_path"]]) && file.exists(group_set@db_info[["db_path"]])) {
+    db_path <- group_set@db_info[["db_path"]]
+  }
+  con <- if (!is.null(db_path)) DROMA.Set::connectDROMADatabase(db_path) else NULL
+  if (!is.null(con)) {
+    on.exit(DROMA.Set::closeDROMADatabase(con), add = TRUE)
+  }
+
+  feature_list <- lapply(projects, function(project_name) {
+    tryCatch(
+      DROMA.Set::listDROMAFeatures(project_name, feature_type, connection = con),
+      error = function(e) character(0)
+    )
+  })
+  feature_names <- sort(unique(unlist(feature_list, use.names = FALSE)))
+  feature_names[nzchar(feature_names)]
+}
+
 #' Run grouped biomarker screening for a workflow candidate
 #'
 #' @description Reuses \code{DROMA.R::batchFindSignificantFeatures()} to screen
@@ -89,6 +109,12 @@ runWithinStudyScreen <- function(group_set,
   } else {
     subsetWorkflowGroupSet(group_set, selected_projects)
   }
+  if (is.null(feature_names)) {
+    feature_names <- .resolveWorkflowFeatureNames(working_set, selected_projects, feature_type)
+  }
+  if (length(feature_names) == 0) {
+    return(.empty_within_study())
+  }
 
   meta_dt <- tryCatch(
     batch_fun(
@@ -96,7 +122,7 @@ runWithinStudyScreen <- function(group_set,
       feature1_type = "drug",
       feature1_name = drug_name,
       feature2_type = feature_type,
-      feature2_name = feature_names,
+      feature2_name = unique(as.character(feature_names)),
       data_type = "all",
       tumor_type = tumor_type,
       overlap_only = FALSE,
