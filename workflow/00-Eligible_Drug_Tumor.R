@@ -3,6 +3,8 @@
 # Export valid drugs and tumor types that satisfy project-count thresholds
 # ============================================================================
 
+source("R/run_drug_tumor_biomarker_workflow.R")
+
 library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
@@ -33,8 +35,8 @@ valid_inputs <- .get_valid_drugs_and_tumor_types(
 valid_drugs <- valid_inputs$valid_drugs
 valid_tumor_types <- valid_inputs$valid_tumor_types
 
-writeLines(valid_drugs, file.path(output_base, "valid_drugs.txt"))
-writeLines(valid_tumor_types, file.path(output_base, "valid_tumor_types.txt"))
+# writeLines(valid_drugs, file.path(output_base, "valid_drugs.txt"))
+# writeLines(valid_tumor_types, file.path(output_base, "valid_tumor_types.txt"))
 
 fwrite(
   data.frame(drug = valid_drugs, stringsAsFactors = FALSE),

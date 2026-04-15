@@ -1,6 +1,6 @@
 # ============================================================================
-# 03-Clinical_Validation.R
-# Clinical validation on CTRDB using preclinical-selected mRNA biomarkers
+# 04-Clinical_Validation.R
+# Clinical validation on CTRDB using TCGA-AD-filtered mRNA biomarkers
 # ============================================================================
 
 library(data.table)
@@ -22,16 +22,16 @@ tumor_type_slug <- .sanitize_name(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
-cat("\n=== 03: Clinical Validation ===\n")
+cat("\n=== 04: Clinical Validation ===\n")
 
 mRNA_cell_sig <- fread(file.path(output_dir, "mRNA_cell_sig.csv"))
-selected_genes <- fread(file.path(output_dir, "selected_genes.csv"))
+selected_genes_ad_filtered <- fread(file.path(output_dir, "selected_genes_ad_filtered.csv"))
 
 connectCTRDatabase(ctrdb_path)
 
 clinical_batch <- tryCatch(
   batchFindClinicalSigResponse(
-    select_omics = unique(selected_genes$name),
+    select_omics = unique(selected_genes_ad_filtered$name),
     select_drugs = drug,
     data_type = data_type,
     tumor_type = tumor_type,
@@ -55,20 +55,17 @@ if (nrow(clinical_batch) > 0) {
   clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
 }
 
-if (nrow(selected_genes) > 0 && nrow(clinical_sig) > 0) {
+if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
   final_biomarkers <- getIntersectSignificantFeatures(
-    preclinical = as.data.frame(selected_genes),
+    pdcpdx = as.data.frame(selected_genes_ad_filtered),
     ctrdb = as.data.frame(clinical_sig),
-    direction_cols = c(preclinical = "direction_pdcpdx", ctrdb = "direction")
+    direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
   )
 
   if (nrow(final_biomarkers) > 0) {
     final_biomarkers$drug <- drug
     final_biomarkers$tumor_type <- tumor_type
-    final_biomarkers$direction <- coalesce(final_biomarkers$direction_ctrdb, final_biomarkers$direction_pdcpdx_preclinical, final_biomarkers$direction_cell_preclinical)
-    final_biomarkers$direction_ctrdb <- NULL
-    final_biomarkers$direction_pdcpdx_preclinical <- NULL
-    final_biomarkers$direction_cell_preclinical <- NULL
+    final_biomarkers$cell_supported <- final_biomarkers$name %in% mRNA_cell_sig$name
   }
 } else {
   final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)

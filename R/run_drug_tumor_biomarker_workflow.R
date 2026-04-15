@@ -41,6 +41,8 @@
   )) {
     source(file.path(droma_r_dir, path), local = FALSE)
   }
+
+  source(file.path(repo_root, "Meta_project3", "R", "FuncTcgaAD.R"), local = FALSE)
 }
 
 .resolve_biomarker_workflow_config <- function(drug,
@@ -62,6 +64,12 @@
                                                clinical_es_t = 0.05,
                                                clinical_P_t = 0.1,
                                                clinical_n_datasets_t = NULL,
+                                               tcga_ad_p_t = 0.05,
+                                               tcga_rna_counts_dir = file.path(
+                                                 path.expand("~"),
+                                                 "Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts"
+                                               ),
+                                               gene_probe_map_path = NULL,
                                                use_p_value = TRUE,
                                                workflow_dir = file.path(getwd(), "workflow")) {
   if (missing(drug) || !nzchar(drug)) {
@@ -80,12 +88,25 @@
 
   db_path <- normalizePath(db_path %||% file.path(repo_root, "Data", "droma.sqlite"), mustWork = FALSE)
   ctrdb_path <- normalizePath(ctrdb_path %||% file.path(repo_root, "Data", "ctrdb.sqlite"), mustWork = FALSE)
+  gene_probe_map_path <- normalizePath(
+    gene_probe_map_path %||% file.path(repo_root, "Data", "gencode.human.v49.annotation.gene.probeMap"),
+    mustWork = FALSE
+  )
 
   if (!file.exists(db_path)) {
     stop("DROMA database not found: ", db_path, call. = FALSE)
   }
   if (!file.exists(ctrdb_path)) {
     stop("CTRDB database not found: ", ctrdb_path, call. = FALSE)
+  }
+
+  tcga_rna_counts_dir <- normalizePath(tcga_rna_counts_dir, mustWork = FALSE)
+  gene_probe_map_path <- normalizePath(gene_probe_map_path, mustWork = FALSE)
+  if (!dir.exists(tcga_rna_counts_dir)) {
+    stop("TCGA RNA counts directory not found: ", tcga_rna_counts_dir, call. = FALSE)
+  }
+  if (!file.exists(gene_probe_map_path)) {
+    stop("Gene probe map not found: ", gene_probe_map_path, call. = FALSE)
   }
 
   output_base <- if (grepl("^(/|~)", output_base)) {
@@ -117,6 +138,9 @@
     batch_pdcpdx_csv = file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv"),
     cell_sig_csv = file.path(output_dir, "mRNA_cell_sig.csv"),
     pdcpdx_sig_csv = file.path(output_dir, "mRNA_pdcpdx_sig.csv"),
+    selected_genes_csv = file.path(output_dir, "selected_genes.csv"),
+    ad_stats_csv = file.path(output_dir, "selected_genes_ad_stats.csv"),
+    ad_filtered_csv = file.path(output_dir, "selected_genes_ad_filtered.csv"),
     clinical_batch_csv = file.path(output_dir, "clinical_batch_mRNA.csv"),
     clinical_sig_csv = file.path(output_dir, "clinical_sig_mRNA.csv"),
     final_biomarkers_csv = file.path(output_dir, "final_biomarkers.csv"),
@@ -124,6 +148,9 @@
     batch_pdcpdx_rds = file.path(output_dir, "batch_pdcpdx_sets_mRNA.rds"),
     cell_sig_rds = file.path(output_dir, "mRNA_cell_sig.rds"),
     pdcpdx_sig_rds = file.path(output_dir, "mRNA_pdcpdx_sig.rds"),
+    selected_genes_rds = file.path(output_dir, "selected_genes.rds"),
+    ad_stats_rds = file.path(output_dir, "selected_genes_ad_stats.rds"),
+    ad_filtered_rds = file.path(output_dir, "selected_genes_ad_filtered.rds"),
     clinical_batch_rds = file.path(output_dir, "clinical_batch_mRNA.rds"),
     clinical_sig_rds = file.path(output_dir, "clinical_sig_mRNA.rds"),
     final_biomarkers_rds = file.path(output_dir, "final_biomarkers.rds"),
@@ -138,6 +165,9 @@
     clinical_es_t = clinical_es_t,
     clinical_P_t = clinical_P_t,
     clinical_n_datasets_t = clinical_n_datasets_t,
+    tcga_ad_p_t = tcga_ad_p_t,
+    tcga_rna_counts_dir = tcga_rna_counts_dir,
+    gene_probe_map_path = gene_probe_map_path,
     use_p_value = use_p_value
   )
 }
@@ -157,31 +187,29 @@
   if (file.exists(path)) readRDS(path) else .empty_meta_df()
 }
 
-.eligible_values_by_project_count <- function(project_anno,
-                                              anno_df,
-                                              dataset_types,
-                                              value_col,
-                                              min_project_count,
-                                              exclude_values = NULL) {
+.get_valid_values <- function(project_anno,
+                             anno_df,
+                             dataset_types,
+                             value_col,
+                             min_project_count,
+                             exclude_values = NULL) {
   group_projects <- unique(as.character(
     project_anno[project_anno$dataset_type %in% dataset_types, "project_name"]
   ))
   group_projects <- group_projects[!is.na(group_projects) & nzchar(group_projects)]
 
-  values <- sort(unique(as.character(anno_df[[value_col]])))
-  values <- values[!is.na(values) & nzchar(values)]
+  anno_filtered <- anno_df[anno_df$ProjectID %in% group_projects &
+                            !is.na(anno_df[[value_col]]) &
+                            nzchar(anno_df[[value_col]]), ]
+
+  counts <- table(anno_filtered[[value_col]])
+  keep_values <- names(counts)[counts >= min_project_count]
+
   if (!is.null(exclude_values)) {
-    values <- setdiff(values, exclude_values)
+    keep_values <- setdiff(keep_values, exclude_values)
   }
 
-  keep_values <- values[vapply(values, function(v) {
-    value_projects <- unique(as.character(
-      anno_df$ProjectID[!is.na(anno_df[[value_col]]) & anno_df[[value_col]] == v]
-    ))
-    length(intersect(group_projects, value_projects)) >= min_project_count
-  }, logical(1))]
-
-  keep_values
+  sort(keep_values)
 }
 
 .filter_projects_for_drug_tumor <- function(project_names,
@@ -232,14 +260,14 @@
                                              sample_anno,
                                              cell_n_datasets_t,
                                              pdcpdx_n_datasets_t) {
-  valid_cell_drugs <- .eligible_values_by_project_count(
+  valid_cell_drugs <- .get_valid_values(
     project_anno = project_anno,
     anno_df = drug_anno,
     dataset_types = c("CellLine", "PDC"),
     value_col = "DrugName",
     min_project_count = cell_n_datasets_t
   )
-  valid_pdcpdx_drugs <- .eligible_values_by_project_count(
+  valid_pdcpdx_drugs <- .get_valid_values(
     project_anno = project_anno,
     anno_df = drug_anno,
     dataset_types = c("PDO", "PDX"),
@@ -247,7 +275,7 @@
     min_project_count = pdcpdx_n_datasets_t
   )
 
-  valid_cell_tumor_types <- .eligible_values_by_project_count(
+  valid_cell_tumor_types <- .get_valid_values(
     project_anno = project_anno,
     anno_df = sample_anno,
     dataset_types = c("CellLine", "PDC"),
@@ -255,7 +283,7 @@
     min_project_count = cell_n_datasets_t,
     exclude_values = "non-cancer"
   )
-  valid_pdcpdx_tumor_types <- .eligible_values_by_project_count(
+  valid_pdcpdx_tumor_types <- .get_valid_values(
     project_anno = project_anno,
     anno_df = sample_anno,
     dataset_types = c("PDO", "PDX"),
@@ -417,25 +445,112 @@
     data.frame(name = character(0), stringsAsFactors = FALSE)
   }
 
+  selected_genes <- if (nrow(cell_sig) > 0 && nrow(pdcpdx_sig) > 0) {
+    DROMA.R::getIntersectSignificantFeatures(
+      cell = cell_sig,
+      pdcpdx = pdcpdx_sig
+    )
+  } else {
+    data.frame(name = character(0), stringsAsFactors = FALSE)
+  }
+
   data.table::fwrite(cell_sig, config$cell_sig_csv)
   data.table::fwrite(pdcpdx_sig, config$pdcpdx_sig_csv)
+  data.table::fwrite(selected_genes, config$selected_genes_csv)
   saveRDS(cell_sig, config$cell_sig_rds)
   saveRDS(pdcpdx_sig, config$pdcpdx_sig_rds)
+  saveRDS(selected_genes, config$selected_genes_rds)
 
-  list(cell_sig = cell_sig, pdcpdx_sig = pdcpdx_sig)
+  list(cell_sig = cell_sig, pdcpdx_sig = pdcpdx_sig, selected_genes = selected_genes)
+}
+
+.run_tcga_ad <- function(config,
+                         selected_genes = NULL) {
+  .load_biomarker_runtime(config$repo_root)
+  dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  selected_genes <- selected_genes %||% .read_or_empty(config$selected_genes_rds)
+  if (!nrow(selected_genes)) {
+    warning("selected_genes is empty; writing empty TCGA AD outputs", call. = FALSE)
+    ad_stats <- data.frame(name = character(0), stringsAsFactors = FALSE)
+    ad_filtered <- data.frame(name = character(0), stringsAsFactors = FALSE)
+  } else {
+    con <- DROMA.Set::connectDROMADatabase(config$db_path)
+    on.exit(try(close(con), silent = TRUE), add = TRUE)
+
+    project_anno <- DROMA.Set::listDROMAProjects()
+    drug_anno <- DROMA.Set::getDROMAAnnotation("drug")
+    sample_anno <- DROMA.Set::getDROMAAnnotation("sample")
+
+    cell_names <- .filter_projects_for_drug_tumor(
+      project_names = project_anno$project_name,
+      project_anno = project_anno,
+      drug_anno = drug_anno,
+      sample_anno = sample_anno,
+      dataset_types = c("CellLine", "PDC"),
+      drug = config$drug,
+      tumor_type = config$tumor_type,
+      min_project_count = config$cell_n_datasets_t
+    )
+    pdcpdx_names <- .filter_projects_for_drug_tumor(
+      project_names = project_anno$project_name,
+      project_anno = project_anno,
+      drug_anno = drug_anno,
+      sample_anno = sample_anno,
+      dataset_types = c("PDO", "PDX"),
+      drug = config$drug,
+      tumor_type = config$tumor_type,
+      min_project_count = config$pdcpdx_n_datasets_t
+    )
+
+    cell_sets <- DROMA.Set::createMultiDromaSetFromAllProjects(
+      db_path = config$db_path,
+      include_projects = cell_names,
+      con = con
+    )
+    pdcpdx_sets <- DROMA.Set::createMultiDromaSetFromAllProjects(
+      db_path = config$db_path,
+      include_projects = pdcpdx_names,
+      con = con
+    )
+
+    ad_results <- batchFindTcgaADConcordantFeatures(
+      selected_features = selected_genes,
+      cell_set = cell_sets,
+      pdcpdx_set = pdcpdx_sets,
+      tumor_type = config$tumor_type,
+      tcga_rna_counts_dir = config$tcga_rna_counts_dir,
+      gene_probe_map_path = config$gene_probe_map_path,
+      feature_type = config$feature2_type,
+      data_type = config$data_type,
+      p_t = config$tcga_ad_p_t
+    )
+    ad_stats <- ad_results$ad_stats
+    ad_filtered <- ad_results$ad_filtered
+  }
+
+  data.table::fwrite(ad_stats, config$ad_stats_csv)
+  data.table::fwrite(ad_filtered, config$ad_filtered_csv)
+  saveRDS(ad_stats, config$ad_stats_rds)
+  saveRDS(ad_filtered, config$ad_filtered_rds)
+
+  list(
+    ad_stats = ad_stats,
+    ad_filtered = ad_filtered
+  )
 }
 
 .run_clinical_validation <- function(config,
-                                     pdcpdx_sig = NULL,
+                                     preclinical_sig = NULL,
                                      cell_sig = NULL) {
   .load_biomarker_runtime(config$repo_root)
   dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
 
-  pdcpdx_sig <- pdcpdx_sig %||% .read_or_empty(config$pdcpdx_sig_rds)
+  preclinical_sig <- preclinical_sig %||% .read_or_empty(config$ad_filtered_rds)
   cell_sig <- cell_sig %||% .read_or_empty(config$cell_sig_rds)
 
-  if (!nrow(pdcpdx_sig)) {
-    warning("mRNA_pdcpdx_sig is empty; clinical validation will return empty outputs", call. = FALSE)
+  if (!nrow(preclinical_sig)) {
+    warning("AD-filtered preclinical genes are empty; clinical validation will return empty outputs", call. = FALSE)
     clinical_batch <- .empty_meta_df()
     clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
     final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
@@ -452,7 +567,7 @@
 
     clinical_batch <- tryCatch(
       DROMA.R::batchFindClinicalSigResponse(
-        select_omics = unique(as.character(pdcpdx_sig$name)),
+        select_omics = unique(as.character(preclinical_sig$name)),
         select_drugs = config$drug,
         data_type = config$data_type,
         tumor_type = config$tumor_type,
@@ -481,14 +596,13 @@
         warning("No significant CTRDB biomarkers passed the configured thresholds", call. = FALSE)
         final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
       } else {
-        pdcpdx_for_intersect <- as.data.frame(pdcpdx_sig)
-        if (!"direction" %in% names(pdcpdx_for_intersect)) {
-          stop("pdcpdx_sig must contain a direction column", call. = FALSE)
+        preclinical_for_intersect <- as.data.frame(preclinical_sig)
+        if (!"direction_pdcpdx" %in% names(preclinical_for_intersect)) {
+          stop("AD-filtered preclinical data must contain direction_pdcpdx column", call. = FALSE)
         }
-        names(pdcpdx_for_intersect)[names(pdcpdx_for_intersect) == "direction"] <- "direction_pdcpdx"
 
         final_biomarkers <- DROMA.R::getIntersectSignificantFeatures(
-          pdcpdx = pdcpdx_for_intersect,
+          pdcpdx = preclinical_for_intersect,
           ctrdb = as.data.frame(clinical_sig),
           direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
         )
@@ -532,6 +646,12 @@ run_drug_tumor_biomarker_workflow <- function(drug,
                                               pdcpdx_es_t = 0.1,
                                               pdcpdx_P_t = 0.05,
                                               pdcpdx_n_datasets_t = 2L,
+                                              tcga_ad_p_t = 0.05,
+                                              tcga_rna_counts_dir = file.path(
+                                                path.expand("~"),
+                                                "Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts"
+                                              ),
+                                              gene_probe_map_path = NULL,
                                               clinical_es_t = 0.05,
                                               clinical_P_t = 0.1,
                                               clinical_n_datasets_t = NULL,
@@ -554,6 +674,9 @@ run_drug_tumor_biomarker_workflow <- function(drug,
     pdcpdx_es_t = pdcpdx_es_t,
     pdcpdx_P_t = pdcpdx_P_t,
     pdcpdx_n_datasets_t = pdcpdx_n_datasets_t,
+    tcga_ad_p_t = tcga_ad_p_t,
+    tcga_rna_counts_dir = tcga_rna_counts_dir,
+    gene_probe_map_path = gene_probe_map_path,
     clinical_es_t = clinical_es_t,
     clinical_P_t = clinical_P_t,
     clinical_n_datasets_t = clinical_n_datasets_t,
@@ -567,11 +690,15 @@ run_drug_tumor_biomarker_workflow <- function(drug,
     batch_cell = batch_results$batch_cell,
     batch_pdcpdx = batch_results$batch_pdcpdx
   )
+  ad_results <- .run_tcga_ad(
+    config,
+    selected_genes = select_results$selected_genes
+  )
   clinical_results <- .run_clinical_validation(
     config,
-    pdcpdx_sig = select_results$pdcpdx_sig,
+    preclinical_sig = ad_results$ad_filtered,
     cell_sig = select_results$cell_sig
   )
 
-  c(batch_results, select_results, clinical_results, list(config = config))
+  c(batch_results, select_results, ad_results, clinical_results, list(config = config))
 }
