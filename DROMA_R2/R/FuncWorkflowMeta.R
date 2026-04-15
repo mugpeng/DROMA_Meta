@@ -4,13 +4,19 @@ mergePreclinicalCandidates <- function(cellline_meta,
                                        pdcpdx_meta,
                                        tcga_results = NULL,
                                        fdr_t = 0.1,
-                                       es_t = 0.1) {
+                                       es_t = 0.1,
+                                       use_p_value = FALSE,
+                                       p_t = 0.05) {
   to_sig <- function(dt, suffix) {
     dt <- data.table::as.data.table(dt)
     if (nrow(dt) == 0) {
       return(data.table::data.table(name = character(), drug = character(), tumor_type = character()))
     }
-    keep <- dt$q_value < fdr_t & abs(dt$effect_size) >= es_t
+    if (isTRUE(use_p_value)) {
+      keep <- !is.na(dt$p_value) & dt$p_value < p_t & abs(dt$effect_size) >= es_t
+    } else {
+      keep <- !is.na(dt$q_value) & dt$q_value < fdr_t & abs(dt$effect_size) >= es_t
+    }
     keep[is.na(keep)] <- FALSE
     dt <- dt[keep]
     if (nrow(dt) == 0) {

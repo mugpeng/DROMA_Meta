@@ -223,6 +223,9 @@ loadTcgaExpressionVector <- local({
   pdcpdx_values <- .collectGroupExpression(pdcpdx_set, row$tumor_type[[1]], row$name[[1]], feature_type)
 
   tcga_values <- if (is.null(tcga_values)) numeric() else tcga_values
+  tcga_values <- if (length(tcga_values) >= 3) as.numeric(scale(tcga_values)) else tcga_values
+  cellline_values <- if (length(cellline_values) >= 3) as.numeric(scale(cellline_values)) else cellline_values
+  pdcpdx_values <- if (length(pdcpdx_values) >= 3) as.numeric(scale(pdcpdx_values)) else pdcpdx_values
 
   cellline_test <- if (length(tcga_values) >= 3 && length(cellline_values) >= 3) {
     .ad_two_sample_test(cellline_values, tcga_values)
@@ -251,7 +254,7 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
                                      pdcpdx_set,
                                      tcga_dir,
                                      feature_type = "mRNA",
-                                     fdr_t = 0.01,
+                                     p_t = 0.01,
                                      cores = 1L,
                                      show_progress = TRUE,
                                      test_top_n = NULL,
@@ -388,8 +391,8 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
   tcga_dt$tcga_ad_cellline_fdr <- stats::p.adjust(tcga_dt$tcga_ad_cellline_p, method = "BH")
   tcga_dt$tcga_ad_pdcpdx_fdr <- stats::p.adjust(tcga_dt$tcga_ad_pdcpdx_p, method = "BH")
   tcga_dt$tcga_supported <- (
-    (!is.na(tcga_dt$tcga_ad_cellline_fdr) & tcga_dt$tcga_ad_cellline_fdr >= fdr_t) |
-      (!is.na(tcga_dt$tcga_ad_pdcpdx_fdr) & tcga_dt$tcga_ad_pdcpdx_fdr >= fdr_t)
+    (!is.na(tcga_dt$tcga_ad_cellline_p) & tcga_dt$tcga_ad_cellline_p > p_t) |
+      (!is.na(tcga_dt$tcga_ad_pdcpdx_p) & tcga_dt$tcga_ad_pdcpdx_p > p_t)
   )
   if (show_progress) {
     elapsed <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))

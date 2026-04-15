@@ -152,7 +152,7 @@ test_that("runTcgaTranslationFilter treats non-significant distribution differen
   testthat::local_mocked_bindings(
     loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) c(1, 2, 3, 4),
     .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") {
-      if (identical(gene, "G_same")) c(1, 2, 3, 4) else c(10, 11, 12, 13)
+      if (identical(gene, "G_same")) c(1, 2, 3, 4) else c(1, 1, 1, 10)
     },
     .ad_two_sample_test = function(x, y) {
       list(
@@ -170,14 +170,14 @@ test_that("runTcgaTranslationFilter treats non-significant distribution differen
     tcga_dir = tempdir(),
     cores = 1L,
     show_progress = FALSE,
-    fdr_t = 0.05
+    p_t = 0.01
   )
 
   expect_true(subset(out, name == "G_same")$tcga_supported)
   expect_false(subset(out, name == "G_diff")$tcga_supported)
 })
 
-test_that("runTcgaTranslationFilter compares translation on unscaled expression values", {
+test_that("runTcgaTranslationFilter compares translation on z-scored expression values", {
   candidates <- data.frame(
     drug = "D1",
     tumor_type = "breast cancer",
@@ -203,10 +203,10 @@ test_that("runTcgaTranslationFilter compares translation on unscaled expression 
     tcga_dir = tempdir(),
     cores = 1L,
     show_progress = FALSE,
-    fdr_t = 0.05
+    p_t = 0.01
   )
 
   expect_length(captured_inputs, 2L)
-  expect_equal(captured_inputs[[1]]$x, c(10, 11, 12, 13))
-  expect_equal(captured_inputs[[1]]$y, c(1, 2, 3, 4))
+  expect_equal(captured_inputs[[1]]$x, as.numeric(scale(c(10, 11, 12, 13))))
+  expect_equal(captured_inputs[[1]]$y, as.numeric(scale(c(1, 2, 3, 4))))
 })

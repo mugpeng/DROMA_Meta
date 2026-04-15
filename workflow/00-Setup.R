@@ -12,7 +12,7 @@ tcga_rna_counts_dir <- "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD
 # tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
 
 # Gene symbol -> Ensembl id map for TCGA row lookup (TSV: id, gene, ...). "" -> ../Data/gencode.v22.annotation.gene.probeMap
-gene_probe_map_path <- ""
+gene_probe_map_path <- "/Users/peng/Desktop/Project/DROMA/Data/gencode.human.v49.annotation.gene.probeMap"
 # gene_probe_map_path <- "/Users/peng/Desktop/Project/DROMA/Data/gencode.v22.annotation.gene.probeMap"
 
 workflow_root <- file.path(".", "workflow")
@@ -48,15 +48,22 @@ workflow_config <- buildWorkflowConfig(
   } else {
     file.path(repo_root, "..", "Data", "TCGA", "rna_counts")
   },
+  gene_probe_map = if (nzchar(gene_probe_map_path)) {
+    gene_probe_map_path
+  } else {
+    file.path(repo_root, "..", "Data", "gencode.v22.annotation.gene.probeMap")
+  },
   output_base = file.path(workflow_root, "Output"),
   drug_names = "Paclitaxel",
   tumor_types = "breast cancer",
   feature_type = "mRNA",
+  # Meta: |effect_size| >= es_t, and either p_value < meta_p_t (meta_use_p_value TRUE) or q_value < fdr_t (FALSE)
   es_t = 0.1,
   fdr_t = 0.1,
-  pair_cor_t = 0.2,
-  pair_p_t = 0.05,
-  tcga_fdr_t = 0.1,
+  meta_p_t = 0.05,
+  meta_use_p_value = TRUE,
+  # TCGA translation: raw AD/KS p > tcga_p_t => supported
+  tcga_p_t = 0.1,
   requested_cores = 3L
 )
 

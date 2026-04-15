@@ -70,9 +70,15 @@ for (group_name in names(group_sets)) {
   } else {
     .empty_meta()
   }
-  sig_results[[group_name]] <- meta_results[[group_name]][
-    q_value < workflow_config$fdr_t & abs(effect_size) >= workflow_config$es_t
-  ]
+  sig_results[[group_name]] <- if (isTRUE(workflow_config$meta_use_p_value)) {
+    meta_results[[group_name]][
+      !is.na(p_value) & p_value < workflow_config$meta_p_t & abs(effect_size) >= workflow_config$es_t
+    ]
+  } else {
+    meta_results[[group_name]][
+      !is.na(q_value) & q_value < workflow_config$fdr_t & abs(effect_size) >= workflow_config$es_t
+    ]
+  }
 
   fwrite(meta_results[[group_name]], file.path(workflow_config$output_base, "03-meta", paste0(group_name, "_meta.csv")))
   fwrite(sig_results[[group_name]], file.path(workflow_config$output_base, "03-meta", paste0(group_name, "_meta_sig.csv")))
@@ -82,7 +88,9 @@ preclinical_candidates <- mergePreclinicalCandidates(
   cellline_meta = meta_results$cellline,
   pdcpdx_meta = meta_results$pdcpdx,
   fdr_t = workflow_config$fdr_t,
-  es_t = workflow_config$es_t
+  es_t = workflow_config$es_t,
+  use_p_value = workflow_config$meta_use_p_value,
+  p_t = workflow_config$meta_p_t
 )
 
 save_stage(meta_results, "03-meta", "meta_results.rds")

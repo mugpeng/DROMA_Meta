@@ -13,7 +13,7 @@ tcga_results <- runTcgaTranslationFilter(
   pdcpdx_set = group_sets$pdcpdx,
   tcga_dir = workflow_config$tcga_dir,
   feature_type = workflow_config$feature_type,
-  fdr_t = workflow_config$tcga_fdr_t,
+  p_t = workflow_config$tcga_p_t,
   cores = .get_safe_cores(workflow_config$requested_cores),
   gene_probe_map = workflow_config$gene_probe_map
 )

@@ -12,6 +12,8 @@ merged_candidates <- mergePreclinicalCandidates(
   tcga_results = tcga_results,
   fdr_t = workflow_config$fdr_t,
   es_t = workflow_config$es_t,
+  use_p_value = workflow_config$meta_use_p_value,
+  p_t = workflow_config$meta_p_t
 )
 
 merged_candidates2 <- merged_candidates[merged_candidates$tcga_supported %in% TRUE,]
