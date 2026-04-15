@@ -11,14 +11,21 @@ defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
 # Driver-level input and output locations. Keep these runtime choices here so
 # the files under R/ remain reusable pure function definitions.
-valid_drugs_csv <- file.path(defaults$output_base, "valid_drugs.csv")
-valid_tumor_types_csv <- file.path(defaults$output_base, "valid_tumor_types.csv")
+eligible_pairs_pdcpdx_ge_2_csv <- file.path(defaults$output_base, "eligible_drug_tumor_pairs_pdcpdx_ge_2.csv")
+eligible_pairs_pdcpdx_eq_1_csv <- file.path(defaults$output_base, "eligible_drug_tumor_pairs_pdcpdx_eq_1.csv")
 summary_csv <- file.path(defaults$output_base, "meta_workflow_batch_summary.csv")
 
 # Batch-loop inputs. Edit these values in the script when you want to change
 # how the workflow is run.
-drugs <- readSingleColumnCsv(valid_drugs_csv, "drug")
-tumor_types <- readSingleColumnCsv(valid_tumor_types_csv, "tumor_type")
+eligible_pairs <- data.table::rbindlist(
+  list(
+    data.table::fread(eligible_pairs_pdcpdx_ge_2_csv, data.table = TRUE),
+    data.table::fread(eligible_pairs_pdcpdx_eq_1_csv, data.table = TRUE)
+  ),
+  use.names = TRUE,
+  fill = TRUE
+)
+eligible_pairs <- unique(eligible_pairs[, .(drug, tumor_type)])
 
 db_path <- defaults$droma_db_path
 # db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
@@ -34,7 +41,7 @@ output_base <- defaults$output_base
 
 feature2_type <- "mRNA"
 data_type <- "all"
-cores <- 16
+cores <- 4
 
 cell_min_intersected_cells <- 20
 pdcpdx_min_intersected_cells <- 8
@@ -56,39 +63,38 @@ clinical_n_datasets_t <- NULL
 results <- list()
 result_id <- 1L
 
-# drug <- drugs[1]
-# tumor_type <- tumor_types[1]
+# pair <- eligible_pairs[1]
 
-for (drug in drugs) {
-  for (tumor_type in tumor_types) {
-    results[[result_id]] <- runMetaWorkflow(
-      drug = drug,
-      tumor_type = tumor_type,
-      feature2_type = feature2_type,
-      data_type = data_type,
-      cores = cores,
-      cell_min_intersected_cells = cell_min_intersected_cells,
-      pdcpdx_min_intersected_cells = pdcpdx_min_intersected_cells,
-      cell_es_t = cell_es_t,
-      cell_P_t = cell_P_t,
-      cell_n_datasets_t = cell_n_datasets_t,
-      pdcpdx_es_t = pdcpdx_es_t,
-      pdcpdx_P_t = pdcpdx_P_t,
-      pdcpdx_n_datasets_t = pdcpdx_n_datasets_t,
-      tcga_ad_p_t = tcga_ad_p_t,
-      clinical_es_t = clinical_es_t,
-      clinical_P_t = clinical_P_t,
-      clinical_n_datasets_t = clinical_n_datasets_t,
-      db_path = db_path,
-      ctrdb_path = ctrdb_path,
-      tcga_rna_counts_dir = tcga_rna_counts_dir,
-      gene_probe_map_path = gene_probe_map_path,
-      output_base = output_base,
-      override = F,
-      verbose = TRUE
-    )
-    result_id <- result_id + 1L
-  }
+for (i in seq_len(nrow(eligible_pairs))) {
+  pair <- eligible_pairs[i]
+
+  results[[result_id]] <- runMetaWorkflow(
+    drug = pair$drug[[1]],
+    tumor_type = pair$tumor_type[[1]],
+    feature2_type = feature2_type,
+    data_type = data_type,
+    cores = cores,
+    cell_min_intersected_cells = cell_min_intersected_cells,
+    pdcpdx_min_intersected_cells = pdcpdx_min_intersected_cells,
+    cell_es_t = cell_es_t,
+    cell_P_t = cell_P_t,
+    cell_n_datasets_t = cell_n_datasets_t,
+    pdcpdx_es_t = pdcpdx_es_t,
+    pdcpdx_P_t = pdcpdx_P_t,
+    pdcpdx_n_datasets_t = pdcpdx_n_datasets_t,
+    tcga_ad_p_t = tcga_ad_p_t,
+    clinical_es_t = clinical_es_t,
+    clinical_P_t = clinical_P_t,
+    clinical_n_datasets_t = clinical_n_datasets_t,
+    db_path = db_path,
+    ctrdb_path = ctrdb_path,
+    tcga_rna_counts_dir = tcga_rna_counts_dir,
+    gene_probe_map_path = gene_probe_map_path,
+    output_base = output_base,
+    override = F,
+    verbose = TRUE
+  )
+  result_id <- result_id + 1L
 }
 
 summary_dt <- data.table::rbindlist(results, fill = TRUE)

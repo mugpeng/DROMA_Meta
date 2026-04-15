@@ -34,20 +34,20 @@ valid_inputs <- getValidDrugsAndTumorTypes(
 valid_drugs <- valid_inputs$valid_drugs
 valid_tumor_types <- valid_inputs$valid_tumor_types
 
-eligible_pairs <- data.table::CJ(
+candidate_pairs <- data.table::CJ(
   drug = valid_drugs,
   tumor_type = valid_tumor_types,
   unique = TRUE
 )
 
-eligible_pairs <- eligible_pairs[
+cell_eligible_pairs <- candidate_pairs[
   vapply(
     seq_len(.N),
     function(i) {
-      drug_i <- eligible_pairs$drug[[i]]
-      tumor_type_i <- eligible_pairs$tumor_type[[i]]
+      drug_i <- candidate_pairs$drug[[i]]
+      tumor_type_i <- candidate_pairs$tumor_type[[i]]
 
-      cell_ok <- tryCatch(
+      tryCatch(
         {
           filterProjectsForDrugTumor(
             project_anno = project_anno,
@@ -62,12 +62,51 @@ eligible_pairs <- eligible_pairs[
         },
         error = function(e) FALSE
       )
+    },
+    logical(1)
+  )
+]
 
-      if (!cell_ok) {
-        return(FALSE)
-      }
+eligible_pairs_pdcpdx_ge_2 <- cell_eligible_pairs[
+  vapply(
+    seq_len(.N),
+    function(i) {
+      drug_i <- cell_eligible_pairs$drug[[i]]
+      tumor_type_i <- cell_eligible_pairs$tumor_type[[i]]
 
-      pdcpdx_ok <- tryCatch(
+      tryCatch(
+        {
+          filterProjectsForDrugTumor(
+            project_anno = project_anno,
+            drug_anno = drug_anno,
+            sample_anno = sample_anno,
+            dataset_types = c("PDO", "PDX"),
+            drug = drug_i,
+            tumor_type = tumor_type_i,
+            min_project_count = 2
+          )
+          TRUE
+        },
+        error = function(e) FALSE
+      )
+    },
+    logical(1)
+  )
+]
+
+remaining_pairs <- cell_eligible_pairs[
+  !eligible_pairs_pdcpdx_ge_2,
+  on = c("drug", "tumor_type")
+]
+
+eligible_pairs_pdcpdx_eq_1 <- remaining_pairs[
+  vapply(
+    seq_len(.N),
+    function(i) {
+      drug_i <- remaining_pairs$drug[[i]]
+      tumor_type_i <- remaining_pairs$tumor_type[[i]]
+
+      tryCatch(
         {
           filterProjectsForDrugTumor(
             project_anno = project_anno,
@@ -82,29 +121,20 @@ eligible_pairs <- eligible_pairs[
         },
         error = function(e) FALSE
       )
-
-      pdcpdx_ok
     },
     logical(1)
   )
 ]
 
-valid_drugs <- unique(eligible_pairs$drug)
-valid_tumor_types <- unique(eligible_pairs$tumor_type)
-
 fwrite(
-  data.frame(drug = valid_drugs, stringsAsFactors = FALSE),
-  file.path(output_base, "valid_drugs.csv")
+  eligible_pairs_pdcpdx_ge_2,
+  file.path(output_base, "eligible_drug_tumor_pairs_pdcpdx_ge_2.csv")
 )
 fwrite(
-  data.frame(tumor_type = valid_tumor_types, stringsAsFactors = FALSE),
-  file.path(output_base, "valid_tumor_types.csv")
-)
-fwrite(
-  eligible_pairs,
-  file.path(output_base, "eligible_drug_tumor_pairs.csv")
+  eligible_pairs_pdcpdx_eq_1,
+  file.path(output_base, "eligible_drug_tumor_pairs_pdcpdx_eq_1.csv")
 )
 
-cat(sprintf("  OK valid_drugs: %d\n", length(valid_drugs)))
-cat(sprintf("  OK valid_tumor_types: %d\n", length(valid_tumor_types)))
-cat(sprintf("  OK eligible_pairs: %d\n", nrow(eligible_pairs)))
+cat(sprintf("  OK cell_eligible_pairs: %d\n", nrow(cell_eligible_pairs)))
+cat(sprintf("  OK eligible_pairs_pdcpdx_ge_2: %d\n", nrow(eligible_pairs_pdcpdx_ge_2)))
+cat(sprintf("  OK eligible_pairs_pdcpdx_eq_1: %d\n", nrow(eligible_pairs_pdcpdx_eq_1)))

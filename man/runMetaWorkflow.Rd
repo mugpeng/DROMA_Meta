@@ -27,8 +27,6 @@ runMetaWorkflow(
   tcga_rna_counts_dir = getMetaWorkflowDefaults()$tcga_rna_counts_dir,
   gene_probe_map_path = getMetaWorkflowDefaults()$gene_probe_map_path,
   output_base = getMetaWorkflowDefaults()$output_base,
-  batch_cell_preloaded = NULL,
-  batch_pdcpdx_preloaded = NULL,
   override = FALSE,
   verbose = TRUE
 )
@@ -77,12 +75,6 @@ runMetaWorkflow(
 \item{gene_probe_map_path}{Path to the probe-map file.}
 
 \item{output_base}{Base directory for workflow outputs.}
-
-\item{batch_cell_preloaded}{Optional value for `preloaded` in
-`DROMA.R::batchFindSignificantFeatures()` for cell/PDC batches (`NULL`
-uses default loading inside that function).}
-
-\item{batch_pdcpdx_preloaded}{Optional `preloaded` for PDO/PDX batches.}
 
 \item{override}{Logical, whether to ignore existing output files and rerun
 all workflow stages.}
