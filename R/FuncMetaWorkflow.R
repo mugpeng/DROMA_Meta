@@ -169,6 +169,24 @@ runMetaWorkflow <- function(drug,
     data.table::fread(path, data.table = TRUE)
   }
 
+  notifyStageSkipped <- function(stage_label, output_paths) {
+    if (!verbose) {
+      return(invisible(NULL))
+    }
+
+    cat(
+      sprintf(
+        paste0(
+          "  SKIP %s: detected existing output file(s), reusing cached results.\n",
+          "  Reused: %s\n",
+          "  Set override = TRUE to rerun this stage.\n"
+        ),
+        stage_label,
+        paste(basename(output_paths), collapse = ", ")
+      )
+    )
+  }
+
   con <- NULL
   getCon <- function() {
     if (is.null(con)) {
@@ -197,9 +215,7 @@ runMetaWorkflow <- function(drug,
       }
 
       if (!override && stageFilesExist(batch_cell_path, batch_pdcpdx_path)) {
-        if (verbose) {
-          cat("  SKIP stage 01: existing outputs found\n")
-        }
+        notifyStageSkipped("stage 01", c(batch_cell_path, batch_pdcpdx_path))
         batch_cell <- readWorkflowCsv(batch_cell_path)
         batch_pdcpdx <- readWorkflowCsv(batch_pdcpdx_path)
       } else {
@@ -260,9 +276,10 @@ runMetaWorkflow <- function(drug,
       }
 
       if (!override && stageFilesExist(mRNA_cell_sig_path, mRNA_pdcpdx_sig_path, selected_genes_path)) {
-        if (verbose) {
-          cat("  SKIP stage 02: existing outputs found\n")
-        }
+        notifyStageSkipped(
+          "stage 02",
+          c(mRNA_cell_sig_path, mRNA_pdcpdx_sig_path, selected_genes_path)
+        )
         mRNA_cell_sig <- readWorkflowCsv(mRNA_cell_sig_path)
         mRNA_pdcpdx_sig <- readWorkflowCsv(mRNA_pdcpdx_sig_path)
         selected_genes <- readWorkflowCsv(selected_genes_path)
@@ -299,9 +316,7 @@ runMetaWorkflow <- function(drug,
       }
 
       if (!override && stageFilesExist(ad_stats_path, ad_filtered_path)) {
-        if (verbose) {
-          cat("  SKIP stage 03: existing outputs found\n")
-        }
+        notifyStageSkipped("stage 03", c(ad_stats_path, ad_filtered_path))
         ad_stats <- readWorkflowCsv(ad_stats_path)
         selected_genes_ad_filtered <- readWorkflowCsv(ad_filtered_path)
       } else {
@@ -335,9 +350,7 @@ runMetaWorkflow <- function(drug,
       }
 
       if (!override && stageFilesExist(clinical_sig_path, final_biomarkers_path)) {
-        if (verbose) {
-          cat("  SKIP stage 04: existing outputs found\n")
-        }
+        notifyStageSkipped("stage 04", c(clinical_sig_path, final_biomarkers_path))
         clinical_sig <- readWorkflowCsv(clinical_sig_path)
         final_biomarkers <- readWorkflowCsv(final_biomarkers_path)
       } else {
