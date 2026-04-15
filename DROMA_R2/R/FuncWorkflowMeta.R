@@ -16,7 +16,7 @@ mergePreclinicalCandidates <- function(cellline_meta,
     if (nrow(dt) == 0) {
       return(data.table::data.table(name = character(), drug = character(), tumor_type = character()))
     }
-    out <- unique(dt[, .(drug, tumor_type, name, effect_size, q_value, n_datasets, direction)])
+    out <- unique(dt[, c("drug", "tumor_type", "name", "effect_size", "q_value", "n_datasets", "direction"), with = FALSE])
     data.table::setnames(
       out,
       c("effect_size", "q_value", "n_datasets", "direction"),
@@ -32,13 +32,18 @@ mergePreclinicalCandidates <- function(cellline_meta,
     return(merged)
   }
 
-  merged[, `:=`(
-    invitro_supported = TRUE,
-    pdcpdx_supported = TRUE,
-    direction_concordant = direction_cellline == direction_pdcpdx,
-    preclinical_direction = ifelse(effect_size_cellline + effect_size_pdcpdx >= 0, "Up", "Down"),
-    effect_size = rowMeans(cbind(effect_size_cellline, effect_size_pdcpdx), na.rm = TRUE)
-  )]
+  merged$invitro_supported <- TRUE
+  merged$pdcpdx_supported <- TRUE
+  merged$direction_concordant <- merged$direction_cellline == merged$direction_pdcpdx
+  merged$preclinical_direction <- ifelse(
+    merged$effect_size_cellline + merged$effect_size_pdcpdx >= 0,
+    "Up",
+    "Down"
+  )
+  merged$effect_size <- rowMeans(
+    cbind(merged$effect_size_cellline, merged$effect_size_pdcpdx),
+    na.rm = TRUE
+  )
 
   if (!is.null(tcga_results) && nrow(tcga_results) > 0) {
     merged <- merge(merged, tcga_results, by = c("drug", "tumor_type", "name"), all.x = TRUE)

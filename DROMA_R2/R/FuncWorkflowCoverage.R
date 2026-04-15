@@ -105,7 +105,7 @@ computeCoverageForGroup <- function(project_names,
   }
 
   coverage_dt <- data.table::rbindlist(rows, fill = TRUE)
-  eligible_dt <- coverage_dt[eligible == TRUE]
+  eligible_dt <- coverage_dt[coverage_dt[["eligible"]] %in% TRUE, ]
   if (nrow(eligible_dt) == 0) {
     return(list(
       coverage = coverage_dt,
@@ -129,34 +129,34 @@ computeCoverageForGroup <- function(project_names,
     )
   })
   candidates <- data.table::rbindlist(candidate_list, fill = TRUE)
-  candidates <- candidates[eligible_pair_count >= min_pairs]
+  candidates <- candidates[candidates[["eligible_pair_count"]] >= min_pairs, ]
 
   candidates_save <- data.table::copy(candidates)
   if (nrow(candidates_save) > 0) {
-    candidates_save[, eligible_pairs := vapply(
-      eligible_pairs,
+    candidates_save$eligible_pairs <- vapply(
+      candidates_save$eligible_pairs,
       function(x) paste(paste(x$drug_project, x$expr_project, sep = "->"), collapse = ";"),
       FUN.VALUE = character(1)
-    )]
-    candidates_save[, eligible_drug_projects := vapply(
-      eligible_drug_projects,
+    )
+    candidates_save$eligible_drug_projects <- vapply(
+      candidates_save$eligible_drug_projects,
       function(x) paste(x, collapse = ";"),
       FUN.VALUE = character(1)
-    )]
-    candidates_save[, eligible_expr_projects := vapply(
-      eligible_expr_projects,
+    )
+    candidates_save$eligible_expr_projects <- vapply(
+      candidates_save$eligible_expr_projects,
       function(x) paste(x, collapse = ";"),
       FUN.VALUE = character(1)
-    )]
-    candidates_save[, filtered_projects := vapply(
-      filtered_projects,
+    )
+    candidates_save$filtered_projects <- vapply(
+      candidates_save$filtered_projects,
       function(x) paste(x, collapse = ";"),
       FUN.VALUE = character(1)
-    )]
-    candidates_save[, model_group := dataset_label]
-    candidates_save[, feature_type := feature_type]
-    candidates_save[, min_overlap_per_pair := min_overlap_per_pair]
-    candidates_save[, min_pairs := min_pairs]
+    )
+    candidates_save$model_group <- dataset_label
+    candidates_save$feature_type <- feature_type
+    candidates_save$min_overlap_per_pair <- min_overlap_per_pair
+    candidates_save$min_pairs <- min_pairs
   }
 
   list(

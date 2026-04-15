@@ -11,10 +11,10 @@ merged_candidates <- mergePreclinicalCandidates(
   pdcpdx_meta = meta_results$pdcpdx,
   tcga_results = tcga_results,
   fdr_t = workflow_config$fdr_t,
-  es_t = workflow_config$es_t
+  es_t = workflow_config$es_t,
 )
 
-merged_candidates <- merged_candidates[direction_concordant == TRUE]
+merged_candidates2 <- merged_candidates[merged_candidates$tcga_supported %in% TRUE,]
 
 save_stage(merged_candidates, "05-preclinical-merge", "merged_candidates.rds")
 fwrite(merged_candidates, file.path(workflow_config$output_base, "05-preclinical-merge", "merged_candidates.csv"))

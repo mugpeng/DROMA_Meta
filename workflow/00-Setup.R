@@ -52,7 +52,7 @@ workflow_config <- buildWorkflowConfig(
   fdr_t = 0.1,
   pair_cor_t = 0.2,
   pair_p_t = 0.05,
-  tcga_fdr_t = 0.01,
+  tcga_fdr_t = 0.1,
   requested_cores = 3L
 )
 

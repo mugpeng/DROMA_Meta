@@ -5,9 +5,10 @@ dir.create(file.path(workflow_config$output_base, "04-tcga-filter"), recursive =
 
 group_sets <- read_stage("01-projects", "group_sets.rds")
 preclinical_candidates <- read_stage("03-meta", "preclinical_candidates.rds")
+preclinical_candidates2 <- preclinical_candidates[preclinical_candidates$direction_concordant %in% TRUE,]
 
 tcga_results <- runTcgaTranslationFilter(
-  preclinical_candidates = preclinical_candidates,
+  preclinical_candidates = preclinical_candidates2,
   cellline_set = group_sets$cellline,
   pdcpdx_set = group_sets$pdcpdx,
   tcga_dir = workflow_config$tcga_dir,

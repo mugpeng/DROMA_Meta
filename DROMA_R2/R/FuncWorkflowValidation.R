@@ -28,13 +28,33 @@ mapTumorTypeToTcgaCode <- function(tumor_type) {
 loadTcgaExpressionVector <- local({
   tcga_cache <- new.env(parent = emptyenv())
   gene_map_cache <- NULL
+  counts_file_cache <- new.env(parent = emptyenv())
 
   function(tcga_dir, tumor_type, gene) {
     tcga_code <- mapTumorTypeToTcgaCode(tumor_type)
     if (is.null(tcga_code)) {
       return(NULL)
     }
-    tcga_file <- file.path(tcga_dir, paste0(tcga_code, ".htseq_counts.tsv.gz"))
+
+    dir_key <- normalizePath(tcga_dir, mustWork = FALSE)
+    cache_key <- paste(dir_key, tcga_code, sep = "::")
+    if (!exists(cache_key, envir = counts_file_cache, inherits = FALSE)) {
+      candidate_files <- c(
+        file.path(tcga_dir, paste0(tcga_code, ".htseq_counts.tsv.gz")),
+        file.path(tcga_dir, "rna_counts", paste0(tcga_code, ".htseq_counts.tsv.gz"))
+      )
+      matched <- candidate_files[file.exists(candidate_files)]
+      assign(
+        cache_key,
+        if (length(matched) > 0) matched[[1]] else NA_character_,
+        envir = counts_file_cache
+      )
+    }
+    tcga_file <- get(cache_key, envir = counts_file_cache, inherits = FALSE)
+
+    if (is.na(tcga_file) || !nzchar(tcga_file)) {
+      return(NULL)
+    }
     if (!file.exists(tcga_file)) {
       return(NULL)
     }
@@ -73,27 +93,33 @@ loadTcgaExpressionVector <- local({
   }
 })
 
-.ad_two_sample_p <- function(x, y) {
+.ad_two_sample_test <- function(x, y) {
   if (length(x) < 3 || length(y) < 3) {
-    return(NA_real_)
+    return(list(p_value = NA_real_, method = NA_character_))
   }
   if (requireNamespace("kSamples", quietly = TRUE)) {
     ad_re <- tryCatch(kSamples::ad.test(x, y), error = function(e) NULL)
     if (!is.null(ad_re) && "ad" %in% names(ad_re)) {
-      return(as.numeric(ad_re$ad[1, " asympt. P-value"]))
+      return(list(
+        p_value = as.numeric(ad_re$ad[1, " asympt. P-value"]),
+        method = "anderson-darling"
+      ))
     }
   }
   ks_re <- tryCatch(stats::ks.test(x, y), error = function(e) NULL)
   if (is.null(ks_re)) {
-    return(NA_real_)
+    return(list(p_value = NA_real_, method = NA_character_))
   }
-  as.numeric(ks_re$p.value)
+  list(
+    p_value = as.numeric(ks_re$p.value),
+    method = "kolmogorov-smirnov"
+  )
 }
 
 .collectGroupExpression <- function(group_set, tumor_type, gene, feature_type = "mRNA") {
   values <- numeric()
   for (project_name in names(group_set@DromaSets)) {
-    expr_mat <- tryCatch(
+    expr_mat <- tryCatch(withCallingHandlers(
       loadMolecularProfiles(
         object = group_set@DromaSets[[project_name]],
         feature_type = feature_type,
@@ -103,8 +129,14 @@ loadTcgaExpressionVector <- local({
         tumor_type = tumor_type,
         zscore = FALSE
       ),
-      error = function(e) NULL
-    )
+      warning = function(w) {
+        if (grepl("^The following samples do not exist:", conditionMessage(w)) ||
+            grepl("^The following features do not exist in the .* data:", conditionMessage(w)) ||
+            grepl("^None of the specified features exist", conditionMessage(w))) {
+          invokeRestart("muffleWarning")
+        }
+      }
+    ), error = function(e) NULL)
     if (is.matrix(expr_mat) && gene %in% rownames(expr_mat)) {
       expr_values <- as.numeric(expr_mat[gene, , drop = TRUE])
       expr_values <- expr_values[is.finite(expr_values)]
@@ -152,24 +184,27 @@ loadTcgaExpressionVector <- local({
   cellline_values <- .collectGroupExpression(cellline_set, row$tumor_type[[1]], row$name[[1]], feature_type)
   pdcpdx_values <- .collectGroupExpression(pdcpdx_set, row$tumor_type[[1]], row$name[[1]], feature_type)
 
-  cellline_scaled <- if (length(cellline_values) >= 3) as.numeric(scale(cellline_values)) else numeric()
-  pdcpdx_scaled <- if (length(pdcpdx_values) >= 3) as.numeric(scale(pdcpdx_values)) else numeric()
-  tcga_scaled <- if (!is.null(tcga_values) && length(tcga_values) >= 3) as.numeric(scale(tcga_values)) else numeric()
+  tcga_values <- if (is.null(tcga_values)) numeric() else tcga_values
+
+  cellline_test <- if (length(tcga_values) >= 3 && length(cellline_values) >= 3) {
+    .ad_two_sample_test(cellline_values, tcga_values)
+  } else {
+    list(p_value = NA_real_, method = NA_character_)
+  }
+  pdcpdx_test <- if (length(tcga_values) >= 3 && length(pdcpdx_values) >= 3) {
+    .ad_two_sample_test(pdcpdx_values, tcga_values)
+  } else {
+    list(p_value = NA_real_, method = NA_character_)
+  }
 
   data.table::data.table(
     drug = row$drug[[1]],
     tumor_type = row$tumor_type[[1]],
     name = row$name[[1]],
-    tcga_ad_cellline_p = if (length(tcga_scaled) >= 3 && length(cellline_scaled) >= 3) {
-      .ad_two_sample_p(cellline_scaled, tcga_scaled)
-    } else {
-      NA_real_
-    },
-    tcga_ad_pdcpdx_p = if (length(tcga_scaled) >= 3 && length(pdcpdx_scaled) >= 3) {
-      .ad_two_sample_p(pdcpdx_scaled, tcga_scaled)
-    } else {
-      NA_real_
-    }
+    tcga_ad_cellline_p = cellline_test$p_value,
+    tcga_ad_pdcpdx_p = pdcpdx_test$p_value,
+    tcga_ad_cellline_method = cellline_test$method,
+    tcga_ad_pdcpdx_method = pdcpdx_test$method
   )
 }
 
@@ -196,7 +231,7 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
       stop("test_top_n must be a positive integer or NULL")
     }
     if (nrow(candidates) > test_top_n) {
-      candidates <- candidates[seq_len(test_top_n)]
+      candidates <- candidates[seq_len(test_top_n), ]
     }
   }
 
@@ -220,7 +255,7 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
 
   worker_function <- function(i) {
     result <- .runTcgaTranslationOne(
-      row = candidates[i],
+      row = candidates[i, ],
       cellline_set = cellline_set,
       pdcpdx_set = pdcpdx_set,
       tcga_dir = tcga_dir,
@@ -271,7 +306,7 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
         chunk_results <- furrr::future_map(chunks, function(chunk_indices) {
           lapply(chunk_indices, function(i) {
             result <- .runTcgaTranslationOne(
-              row = candidates[i],
+              row = candidates[i, ],
               cellline_set = cellline_set,
               pdcpdx_set = pdcpdx_set,
               tcga_dir = tcga_dir,
@@ -290,7 +325,7 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
       chunk_results <- furrr::future_map(chunks, function(chunk_indices) {
         lapply(chunk_indices, function(i) {
           .runTcgaTranslationOne(
-            row = candidates[i],
+            row = candidates[i, ],
             cellline_set = cellline_set,
             pdcpdx_set = pdcpdx_set,
             tcga_dir = tcga_dir,
@@ -308,9 +343,12 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
   }
 
   tcga_dt <- data.table::rbindlist(rows, fill = TRUE)
-  tcga_dt[, tcga_ad_cellline_fdr := stats::p.adjust(tcga_ad_cellline_p, method = "BH")]
-  tcga_dt[, tcga_ad_pdcpdx_fdr := stats::p.adjust(tcga_ad_pdcpdx_p, method = "BH")]
-  tcga_dt[, tcga_supported := (tcga_ad_cellline_fdr < fdr_t) | (tcga_ad_pdcpdx_fdr < fdr_t)]
+  tcga_dt$tcga_ad_cellline_fdr <- stats::p.adjust(tcga_dt$tcga_ad_cellline_p, method = "BH")
+  tcga_dt$tcga_ad_pdcpdx_fdr <- stats::p.adjust(tcga_dt$tcga_ad_pdcpdx_p, method = "BH")
+  tcga_dt$tcga_supported <- (
+    (!is.na(tcga_dt$tcga_ad_cellline_fdr) & tcga_dt$tcga_ad_cellline_fdr >= fdr_t) |
+      (!is.na(tcga_dt$tcga_ad_pdcpdx_fdr) & tcga_dt$tcga_ad_pdcpdx_fdr >= fdr_t)
+  )
   if (show_progress) {
     elapsed <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
     message(sprintf("TCGA translation filter completed in %.1fs", elapsed))
