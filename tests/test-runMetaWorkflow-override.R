@@ -155,7 +155,7 @@ test_force_override_recomputes_outputs <- function() {
   )
 
   stopifnot(identical(result$status[[1]], "success"))
-  stopifnot(identical(calls$batch_sig, 2L))
+  stopifnot(identical(calls$batch_sig, 4L))
   stopifnot(identical(calls$ad, 1L))
 }
 
@@ -238,8 +238,72 @@ test_stage03_filters_concordant_rows_without_get_lookup <- function() {
   stopifnot(identical(selected_genes_ad_filtered$name[[1]], "GENE1"))
 }
 
+test_batch_probe_failure_returns_failed_summary <- function() {
+  output_base <- local_tempdir("meta-output-")
+
+  calls <- new.env(parent = emptyenv())
+  calls$probe <- 0L
+  calls$full <- 0L
+
+  assign("connectDROMADatabase", function(...) textConnection("droma", open = "r"), envir = .GlobalEnv)
+  assign(
+    "listDROMAProjects",
+    function(...) data.frame(
+      dataset_type = c("CellLine", "PDC", "PDO", "PDX"),
+      project_name = c("CELL", "PDC1", "PDO1", "PDX1"),
+      stringsAsFactors = FALSE
+    ),
+    envir = .GlobalEnv
+  )
+  assign(
+    "createMultiDromaSetFromAllProjects",
+    function(..., include_projects, con = NULL) {
+      structure(list(projects = include_projects), class = "MultiDromaSet")
+    },
+    envir = .GlobalEnv
+  )
+  assign(
+    "batchFindSignificantFeatures",
+    function(..., test_top_n = NULL) {
+      if (!is.null(test_top_n)) {
+        calls$probe <- calls$probe + 1L
+        if (calls$probe == 2L) {
+          stop("No data available for the selected feature 1.", call. = FALSE)
+        }
+        return(data.table(name = "GENE1"))
+      }
+
+      calls$full <- calls$full + 1L
+      data.table(name = "GENE1")
+    },
+    envir = .GlobalEnv
+  )
+
+  cleanup <- c(
+    "connectDROMADatabase",
+    "listDROMAProjects",
+    "createMultiDromaSetFromAllProjects",
+    "batchFindSignificantFeatures"
+  )
+  on.exit(rm(list = cleanup, envir = .GlobalEnv), add = TRUE)
+
+  result <- runMetaWorkflow(
+    drug = "DrugA",
+    tumor_type = "Tumor A",
+    output_base = output_base,
+    override = TRUE,
+    verbose = FALSE
+  )
+
+  stopifnot(identical(result$status[[1]], "failed"))
+  stopifnot(grepl("batch_pdcpdx test failed", result$error_message[[1]], fixed = TRUE))
+  stopifnot(identical(calls$probe, 2L))
+  stopifnot(identical(calls$full, 0L))
+}
+
 test_skip_existing_outputs()
 test_force_override_recomputes_outputs()
 test_stage03_filters_concordant_rows_without_get_lookup()
+test_batch_probe_failure_returns_failed_summary()
 
 cat("runMetaWorkflow override tests passed\n")
