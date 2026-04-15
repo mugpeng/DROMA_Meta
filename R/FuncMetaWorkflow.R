@@ -214,7 +214,10 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 01: Batch Preclinical ===\n")
       }
 
-      if (!override && stageFilesExist(batch_cell_path, batch_pdcpdx_path)) {
+      cell_batch_cached <- !override && file.exists(batch_cell_path)
+      pdcpdx_batch_cached <- !override && file.exists(batch_pdcpdx_path)
+
+      if (cell_batch_cached && pdcpdx_batch_cached) {
         notifyStageSkipped("stage 01", c(batch_cell_path, batch_pdcpdx_path))
         batch_cell <- readWorkflowCsv(batch_cell_path)
         batch_pdcpdx <- readWorkflowCsv(batch_pdcpdx_path)
@@ -222,28 +225,83 @@ runMetaWorkflow <- function(drug,
         con_local <- getCon()
         project_anno <- listDROMAProjects()
 
-        cell_names_all <- project_anno[
-          project_anno$dataset_type %in% c("CellLine", "PDC"),
-          "project_name"
-        ]
-        cell_sets <- createMultiDromaSetFromAllProjects(
-          db_path = db_path,
-          include_projects = cell_names_all,
-          con = con_local
-        )
+        cell_sets <- NULL
+        pdcpdx_sets <- NULL
 
-        pdcpdx_names_all <- project_anno[
-          project_anno$dataset_type %in% c("PDO", "PDX"),
-          "project_name"
-        ]
-        pdcpdx_sets <- createMultiDromaSetFromAllProjects(
-          db_path = db_path,
-          include_projects = pdcpdx_names_all,
-          con = con_local
-        )
+        if (!cell_batch_cached) {
+          cell_names_all <- project_anno[
+            project_anno$dataset_type %in% c("CellLine", "PDC"),
+            "project_name"
+          ]
+          cell_sets <- createMultiDromaSetFromAllProjects(
+            db_path = db_path,
+            include_projects = cell_names_all,
+            con = con_local
+          )
 
-        tryCatch(
-          batchFindSignificantFeatures(
+          tryCatch(
+            batchFindSignificantFeatures(
+              cell_sets,
+              feature1_type = "drug",
+              feature1_name = drug,
+              feature2_type = feature2_type,
+              data_type = data_type,
+              tumor_type = tumor_type,
+              overlap_only = FALSE,
+              cores = cores,
+              min_intersected_cells = cell_min_intersected_cells,
+              test_top_n = 5
+            ),
+            error = function(e) {
+              stop(
+                sprintf(
+                  "batch_cell test failed for drug='%s', tumor_type='%s': %s",
+                  drug, tumor_type, conditionMessage(e)
+                ),
+                call. = FALSE
+              )
+            }
+          )
+        }
+
+        if (!pdcpdx_batch_cached) {
+          pdcpdx_names_all <- project_anno[
+            project_anno$dataset_type %in% c("PDO", "PDX"),
+            "project_name"
+          ]
+          pdcpdx_sets <- createMultiDromaSetFromAllProjects(
+            db_path = db_path,
+            include_projects = pdcpdx_names_all,
+            con = con_local
+          )
+
+          tryCatch(
+            batchFindSignificantFeatures(
+              pdcpdx_sets,
+              feature1_type = "drug",
+              feature1_name = drug,
+              feature2_type = feature2_type,
+              data_type = data_type,
+              tumor_type = tumor_type,
+              overlap_only = FALSE,
+              cores = cores,
+              min_intersected_cells = pdcpdx_min_intersected_cells,
+              test_top_n = 5
+            ),
+            error = function(e) {
+              stop(
+                sprintf(
+                  "batch_pdcpdx test failed for drug='%s', tumor_type='%s': %s",
+                  drug, tumor_type, conditionMessage(e)
+                ),
+                call. = FALSE
+              )
+            }
+          )
+        }
+
+        if (!cell_batch_cached) {
+          batch_cell <- batchFindSignificantFeatures(
             cell_sets,
             feature1_type = "drug",
             feature1_name = drug,
@@ -252,22 +310,16 @@ runMetaWorkflow <- function(drug,
             tumor_type = tumor_type,
             overlap_only = FALSE,
             cores = cores,
-            min_intersected_cells = cell_min_intersected_cells,
-            test_top_n = 5
-          ),
-          error = function(e) {
-            stop(
-              sprintf(
-                "batch_cell test failed for drug='%s', tumor_type='%s': %s",
-                drug, tumor_type, conditionMessage(e)
-              ),
-              call. = FALSE
-            )
-          }
-        )
+            min_intersected_cells = cell_min_intersected_cells
+          )
+          data.table::fwrite(batch_cell, batch_cell_path)
+        } else {
+          notifyStageSkipped("stage 01", batch_cell_path)
+          batch_cell <- readWorkflowCsv(batch_cell_path)
+        }
 
-        tryCatch(
-          batchFindSignificantFeatures(
+        if (!pdcpdx_batch_cached) {
+          batch_pdcpdx <- batchFindSignificantFeatures(
             pdcpdx_sets,
             feature1_type = "drug",
             feature1_name = drug,
@@ -276,45 +328,13 @@ runMetaWorkflow <- function(drug,
             tumor_type = tumor_type,
             overlap_only = FALSE,
             cores = cores,
-            min_intersected_cells = pdcpdx_min_intersected_cells,
-            test_top_n = 5
-          ),
-          error = function(e) {
-            stop(
-              sprintf(
-                "batch_pdcpdx test failed for drug='%s', tumor_type='%s': %s",
-                drug, tumor_type, conditionMessage(e)
-              ),
-              call. = FALSE
-            )
-          }
-        )
-
-        batch_cell <- batchFindSignificantFeatures(
-          cell_sets,
-          feature1_type = "drug",
-          feature1_name = drug,
-          feature2_type = feature2_type,
-          data_type = data_type,
-          tumor_type = tumor_type,
-          overlap_only = FALSE,
-          cores = cores,
-          min_intersected_cells = cell_min_intersected_cells
-        )
-        data.table::fwrite(batch_cell, batch_cell_path)
-
-        batch_pdcpdx <- batchFindSignificantFeatures(
-          pdcpdx_sets,
-          feature1_type = "drug",
-          feature1_name = drug,
-          feature2_type = feature2_type,
-          data_type = data_type,
-          tumor_type = tumor_type,
-          overlap_only = FALSE,
-          cores = cores,
-          min_intersected_cells = pdcpdx_min_intersected_cells
-        )
-        data.table::fwrite(batch_pdcpdx, batch_pdcpdx_path)
+            min_intersected_cells = pdcpdx_min_intersected_cells
+          )
+          data.table::fwrite(batch_pdcpdx, batch_pdcpdx_path)
+        } else {
+          notifyStageSkipped("stage 01", batch_pdcpdx_path)
+          batch_pdcpdx <- readWorkflowCsv(batch_pdcpdx_path)
+        }
       }
 
       if (verbose) {
