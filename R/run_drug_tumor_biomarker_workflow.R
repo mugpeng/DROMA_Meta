@@ -157,6 +157,49 @@
   if (file.exists(path)) readRDS(path) else .empty_meta_df()
 }
 
+.filter_projects_for_drug_tumor <- function(project_names,
+                                            project_anno,
+                                            drug_anno,
+                                            sample_anno,
+                                            dataset_types,
+                                            drug,
+                                            tumor_type,
+                                            min_project_count) {
+  group_projects <- unique(as.character(
+    project_anno[project_anno$dataset_type %in% dataset_types, "project_name"]
+  ))
+  group_projects <- group_projects[!is.na(group_projects) & nzchar(group_projects)]
+
+  drug_projects <- unique(as.character(
+    drug_anno$ProjectID[!is.na(drug_anno$DrugName) & drug_anno$DrugName == drug]
+  ))
+  tumor_projects <- unique(as.character(
+    sample_anno$ProjectID[!is.na(sample_anno$TumorType) & sample_anno$TumorType == tumor_type]
+  ))
+
+  keep_projects <- intersect(group_projects, intersect(drug_projects, tumor_projects))
+  keep_projects <- keep_projects[!is.na(keep_projects) & nzchar(keep_projects)]
+
+  if (length(keep_projects) < min_project_count) {
+    stop(
+      sprintf(
+        paste0(
+          "Not enough eligible projects for drug '%s' and tumor_type '%s' in [%s]. ",
+          "Need at least %d project(s) to satisfy n_datasets_t, found %d."
+        ),
+        drug,
+        tumor_type,
+        paste(dataset_types, collapse = ","),
+        min_project_count,
+        length(keep_projects)
+      ),
+      call. = FALSE
+    )
+  }
+
+  keep_projects
+}
+
 .run_batch_preclinical <- function(config) {
   .load_biomarker_runtime(config$repo_root)
   dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
@@ -165,8 +208,45 @@
   on.exit(try(close(con), silent = TRUE), add = TRUE)
 
   project_anno <- DROMA.Set::listDROMAProjects()
-  cell_names <- project_anno[project_anno$dataset_type %in% c("CellLine", "PDC"), "project_name"]
-  pdcpdx_names <- project_anno[project_anno$dataset_type %in% c("PDO", "PDX"), "project_name"]
+  drug_anno <- DROMA.Set::getDROMAAnnotation("drug")
+  sample_anno <- DROMA.Set::getDROMAAnnotation("sample")
+
+  valid_drugs <- sort(unique(as.character(drug_anno$DrugName)))
+  valid_drugs <- valid_drugs[!is.na(valid_drugs) & nzchar(valid_drugs)]
+  valid_tumor_types <- sort(unique(as.character(sample_anno$TumorType)))
+  valid_tumor_types <- valid_tumor_types[
+    !is.na(valid_tumor_types) &
+      nzchar(valid_tumor_types) &
+      valid_tumor_types != "non-cancer"
+  ]
+
+  if (!config$drug %in% valid_drugs) {
+    stop("drug not found in drug_anno: ", config$drug, call. = FALSE)
+  }
+  if (!config$tumor_type %in% valid_tumor_types) {
+    stop("tumor_type not found in sample_anno or excluded as non-cancer: ", config$tumor_type, call. = FALSE)
+  }
+
+  cell_names <- .filter_projects_for_drug_tumor(
+    project_names = project_anno$project_name,
+    project_anno = project_anno,
+    drug_anno = drug_anno,
+    sample_anno = sample_anno,
+    dataset_types = c("CellLine", "PDC"),
+    drug = config$drug,
+    tumor_type = config$tumor_type,
+    min_project_count = config$cell_n_datasets_t
+  )
+  pdcpdx_names <- .filter_projects_for_drug_tumor(
+    project_names = project_anno$project_name,
+    project_anno = project_anno,
+    drug_anno = drug_anno,
+    sample_anno = sample_anno,
+    dataset_types = c("PDO", "PDX"),
+    drug = config$drug,
+    tumor_type = config$tumor_type,
+    min_project_count = config$pdcpdx_n_datasets_t
+  )
 
   if (length(cell_names) == 0) {
     stop("No CellLine/PDC projects found for cell_sets", call. = FALSE)
@@ -215,7 +295,17 @@
   saveRDS(batch_cell, config$batch_cell_rds)
   saveRDS(batch_pdcpdx, config$batch_pdcpdx_rds)
 
-  list(batch_cell = batch_cell, batch_pdcpdx = batch_pdcpdx)
+  writeLines(valid_drugs, file.path(config$output_base, "valid_drugs.txt"))
+  writeLines(cell_names, file.path(config$output_dir, "cell_sets_projects.txt"))
+  writeLines(pdcpdx_names, file.path(config$output_dir, "pdcpdx_sets_projects.txt"))
+  writeLines(valid_tumor_types, file.path(config$output_base, "valid_tumor_types.txt"))
+
+  list(
+    batch_cell = batch_cell,
+    batch_pdcpdx = batch_pdcpdx,
+    cell_projects = cell_names,
+    pdcpdx_projects = pdcpdx_names
+  )
 }
 
 .run_select_preclinical <- function(config,

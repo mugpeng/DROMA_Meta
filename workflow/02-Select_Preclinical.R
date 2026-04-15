@@ -37,10 +37,15 @@ mRNA_pdcpdx_sig <- getSignificantFeatures(
   n_datasets_t = 2
 )
 
+selected_genes <- getIntersectSignificantFeatures(
+  cell = mRNA_cell_sig,
+  pdcpdx = mRNA_pdcpdx_sig
+)
+
 fwrite(mRNA_cell_sig, file.path(output_dir, "mRNA_cell_sig.csv"))
 fwrite(mRNA_pdcpdx_sig, file.path(output_dir, "mRNA_pdcpdx_sig.csv"))
-saveRDS(mRNA_cell_sig, file.path(output_dir, "mRNA_cell_sig.rds"))
-saveRDS(mRNA_pdcpdx_sig, file.path(output_dir, "mRNA_pdcpdx_sig.rds"))
+fwrite(selected_genes, file.path(output_dir, "selected_genes.csv"))
 
 cat(sprintf("  OK mRNA_cell_sig: %d biomarkers\n", nrow(mRNA_cell_sig)))
 cat(sprintf("  OK mRNA_pdcpdx_sig: %d biomarkers\n", nrow(mRNA_pdcpdx_sig)))
+cat(sprintf("  OK selected_genes (intersection): %d biomarkers\n", nrow(selected_genes)))

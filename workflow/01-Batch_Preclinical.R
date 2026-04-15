@@ -31,20 +31,75 @@ cat("tumor_type:", tumor_type, "\n")
 con <- connectDROMADatabase(db_path)
 
 project_anno <- DROMA.Set::listDROMAProjects()
+drug_anno <- getDROMAAnnotation("drug")
+sample_anno <- getDROMAAnnotation("sample")
 
-cell_names <- project_anno[project_anno$dataset_type %in% c("CellLine", "PDC"), ]$project_name
+valid_drugs <- sort(unique(as.character(drug_anno$DrugName)))
+valid_drugs <- valid_drugs[!is.na(valid_drugs) & nzchar(valid_drugs)]
+valid_tumor_types <- sort(unique(as.character(sample_anno$TumorType)))
+valid_tumor_types <- valid_tumor_types[
+  !is.na(valid_tumor_types) &
+    nzchar(valid_tumor_types) &
+    valid_tumor_types != "non-cancer"
+]
+
+if (!drug %in% valid_drugs) {
+  stop("drug not found in drug_anno: ", drug, call. = FALSE)
+}
+if (!tumor_type %in% valid_tumor_types) {
+  stop("tumor_type not found in sample_anno or excluded as non-cancer: ", tumor_type, call. = FALSE)
+}
+
+cell_names_all <- project_anno[project_anno$dataset_type %in% c("CellLine", "PDC"), ]$project_name
+cell_drug_projects <- unique(as.character(
+  drug_anno$ProjectID[!is.na(drug_anno$DrugName) & drug_anno$DrugName == drug]
+))
+cell_tumor_projects <- unique(as.character(
+  sample_anno$ProjectID[!is.na(sample_anno$TumorType) & sample_anno$TumorType == tumor_type]
+))
+cell_names <- intersect(cell_names_all, intersect(cell_drug_projects, cell_tumor_projects))
+if (length(cell_names) < 3) {
+  stop(
+    sprintf(
+      "cell_sets eligible projects for drug '%s' and tumor_type '%s' < 3; cannot satisfy n_datasets_t",
+      drug, tumor_type
+    ),
+    call. = FALSE
+  )
+}
 cell_sets <- createMultiDromaSetFromAllProjects(
   db_path = db_path,
   include_projects = cell_names,
   con = con
 )
 
-pdcpdx_names <- project_anno[project_anno$dataset_type %in% c("PDO", "PDX"), ]$project_name
+pdcpdx_names_all <- project_anno[project_anno$dataset_type %in% c("PDO", "PDX"), ]$project_name
+pdcpdx_drug_projects <- unique(as.character(
+  drug_anno$ProjectID[!is.na(drug_anno$DrugName) & drug_anno$DrugName == drug]
+))
+pdcpdx_tumor_projects <- unique(as.character(
+  sample_anno$ProjectID[!is.na(sample_anno$TumorType) & sample_anno$TumorType == tumor_type]
+))
+pdcpdx_names <- intersect(pdcpdx_names_all, intersect(pdcpdx_drug_projects, pdcpdx_tumor_projects))
+if (length(pdcpdx_names) < 2) {
+  stop(
+    sprintf(
+      "pdcpdx_sets eligible projects for drug '%s' and tumor_type '%s' < 2; cannot satisfy n_datasets_t",
+      drug, tumor_type
+    ),
+    call. = FALSE
+  )
+}
 pdcpdx_sets <- createMultiDromaSetFromAllProjects(
   db_path = db_path,
   include_projects = pdcpdx_names,
   con = con
 )
+
+writeLines(valid_tumor_types, file.path(output_base, "valid_tumor_types.txt"))
+writeLines(valid_drugs, file.path(output_base, "valid_drugs.txt"))
+writeLines(cell_names, file.path(output_dir, "cell_sets_projects.txt"))
+writeLines(pdcpdx_names, file.path(output_dir, "pdcpdx_sets_projects.txt"))
 
 cat("  ", drug, " on cell_sets (", feature2_type, ")...\n", sep = "")
 batch_cell <- batchFindSignificantFeatures(
@@ -59,7 +114,6 @@ batch_cell <- batchFindSignificantFeatures(
   min_intersected_cells = cell_min_intersected_cells
 )
 fwrite(batch_cell, file.path(output_dir, "batch_cell_sets_mRNA.csv"))
-saveRDS(batch_cell, file.path(output_dir, "batch_cell_sets_mRNA.rds"))
 cat(sprintf("  OK cell_sets: %d rows\n", nrow(batch_cell)))
 
 cat("  ", drug, " on pdcpdx_sets (", feature2_type, ")...\n", sep = "")
@@ -75,5 +129,4 @@ batch_pdcpdx <- batchFindSignificantFeatures(
   min_intersected_cells = pdcpdx_min_intersected_cells
 )
 fwrite(batch_pdcpdx, file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv"))
-saveRDS(batch_pdcpdx, file.path(output_dir, "batch_pdcpdx_sets_mRNA.rds"))
 cat(sprintf("  OK pdcpdx_sets: %d rows\n", nrow(batch_pdcpdx)))

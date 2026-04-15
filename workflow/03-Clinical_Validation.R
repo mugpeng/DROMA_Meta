@@ -1,13 +1,11 @@
 # ============================================================================
 # 03-Clinical_Validation.R
-# Clinical validation on CTRDB using pdcpdx significant mRNA biomarkers
+# Clinical validation on CTRDB using preclinical-selected mRNA biomarkers
 # ============================================================================
 
 library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
-
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/run_drug_tumor_biomarker_workflow.R", local = FALSE)
 
 ctrdb_path <- "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
 drug <- "Paclitaxel"
@@ -27,13 +25,13 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 cat("\n=== 03: Clinical Validation ===\n")
 
 mRNA_cell_sig <- fread(file.path(output_dir, "mRNA_cell_sig.csv"))
-mRNA_pdcpdx_sig <- fread(file.path(output_dir, "mRNA_pdcpdx_sig.csv"))
+selected_genes <- fread(file.path(output_dir, "selected_genes.csv"))
 
 connectCTRDatabase(ctrdb_path)
 
 clinical_batch <- tryCatch(
   batchFindClinicalSigResponse(
-    select_omics = unique(mRNA_pdcpdx_sig$name),
+    select_omics = unique(selected_genes$name),
     select_drugs = drug,
     data_type = data_type,
     tumor_type = tumor_type,
@@ -57,14 +55,11 @@ if (nrow(clinical_batch) > 0) {
   clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
 }
 
-if (nrow(mRNA_pdcpdx_sig) > 0 && nrow(clinical_sig) > 0) {
-  mRNA_pdcpdx_sig2 <- as.data.frame(mRNA_pdcpdx_sig)
-  names(mRNA_pdcpdx_sig2)[names(mRNA_pdcpdx_sig2) == "direction"] <- "direction_pdcpdx"
-
+if (nrow(selected_genes) > 0 && nrow(clinical_sig) > 0) {
   final_biomarkers <- getIntersectSignificantFeatures(
-    pdcpdx = mRNA_pdcpdx_sig2,
+    preclinical = as.data.frame(selected_genes),
     ctrdb = as.data.frame(clinical_sig),
-    direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
+    direction_cols = c(preclinical = "direction_pdcpdx", ctrdb = "direction")
   )
 
   if (nrow(final_biomarkers) > 0) {
@@ -79,9 +74,6 @@ if (nrow(mRNA_pdcpdx_sig) > 0 && nrow(clinical_sig) > 0) {
 fwrite(clinical_batch, file.path(output_dir, "clinical_batch_mRNA.csv"))
 fwrite(clinical_sig, file.path(output_dir, "clinical_sig_mRNA.csv"))
 fwrite(final_biomarkers, file.path(output_dir, "final_biomarkers.csv"))
-saveRDS(clinical_batch, file.path(output_dir, "clinical_batch_mRNA.rds"))
-saveRDS(clinical_sig, file.path(output_dir, "clinical_sig_mRNA.rds"))
-saveRDS(final_biomarkers, file.path(output_dir, "final_biomarkers.rds"))
 
 cat(sprintf("  OK clinical_sig: %d biomarkers\n", nrow(clinical_sig)))
 cat(sprintf("  OK final_biomarkers: %d biomarkers\n", nrow(final_biomarkers)))
