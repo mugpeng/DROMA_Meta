@@ -240,17 +240,20 @@ runMetaWorkflow <- function(drug,
           )
 
           tryCatch(
-            batchFindSignificantFeatures(
-              cell_sets,
-              feature1_type = "drug",
-              feature1_name = drug,
-              feature2_type = feature2_type,
-              data_type = data_type,
-              tumor_type = tumor_type,
-              overlap_only = FALSE,
-              cores = cores,
-              min_intersected_cells = cell_min_intersected_cells,
-              test_top_n = 5
+            capture.output(
+              batchFindSignificantFeatures(
+                cell_sets,
+                feature1_type = "drug",
+                feature1_name = drug,
+                feature2_type = feature2_type,
+                data_type = data_type,
+                tumor_type = tumor_type,
+                overlap_only = FALSE,
+                cores = cores,
+                min_intersected_cells = cell_min_intersected_cells,
+                test_top_n = 5
+              ),
+              type = "output"
             ),
             error = function(e) {
               stop(
@@ -276,17 +279,20 @@ runMetaWorkflow <- function(drug,
           )
 
           tryCatch(
-            batchFindSignificantFeatures(
-              pdcpdx_sets,
-              feature1_type = "drug",
-              feature1_name = drug,
-              feature2_type = feature2_type,
-              data_type = data_type,
-              tumor_type = tumor_type,
-              overlap_only = FALSE,
-              cores = cores,
-              min_intersected_cells = pdcpdx_min_intersected_cells,
-              test_top_n = 5
+            capture.output(
+              batchFindSignificantFeatures(
+                pdcpdx_sets,
+                feature1_type = "drug",
+                feature1_name = drug,
+                feature2_type = feature2_type,
+                data_type = data_type,
+                tumor_type = tumor_type,
+                overlap_only = FALSE,
+                cores = cores,
+                min_intersected_cells = pdcpdx_min_intersected_cells,
+                test_top_n = 5
+              ),
+              type = "output"
             ),
             error = function(e) {
               stop(
