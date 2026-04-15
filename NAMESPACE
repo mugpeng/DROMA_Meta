@@ -1,6 +1,5 @@
 # Hand-written namespace for DROMA.Meta.
 
-export(`%||%`)
 export(batchFindTcgaADConcordantFeatures)
 export(buildDrugTumorGrid)
 export(calcFeatureADConcordance)

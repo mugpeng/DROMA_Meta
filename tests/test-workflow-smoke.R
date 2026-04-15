@@ -1,10 +1,10 @@
-`%||%` <- function(x, y) {
+fallback_if_missing <- function(x, y) {
   if (is.null(x) || length(x) == 0 || !nzchar(x)) y else x
 }
 
 cmd_args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", cmd_args, value = TRUE)
-script_path <- sub("^--file=", "", file_arg[1] %||% "")
+script_path <- sub("^--file=", "", fallback_if_missing(file_arg[1], ""))
 script_dir <- if (nzchar(script_path)) dirname(normalizePath(script_path, mustWork = TRUE)) else getwd()
 root_dir <- normalizePath(file.path(script_dir, ".."), mustWork = TRUE)
 

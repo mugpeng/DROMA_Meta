@@ -10,9 +10,9 @@ defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
 # Driver-level input and output locations. Keep these runtime choices here so
 # the files under R/ remain reusable pure function definitions.
-valid_drugs_csv <- file.path(project_root, "workflow", "Output", "valid_drugs.csv")
-valid_tumor_types_csv <- file.path(project_root, "workflow", "Output", "valid_tumor_types.csv")
-summary_csv <- file.path(project_root, "workflow", "Output", "meta_workflow_batch_summary.csv")
+valid_drugs_csv <- file.path(defaults$output_base, "valid_drugs.csv")
+valid_tumor_types_csv <- file.path(defaults$output_base, "valid_tumor_types.csv")
+summary_csv <- file.path(defaults$output_base, "meta_workflow_batch_summary.csv")
 
 # Batch-loop inputs. Edit these values in the script when you want to change
 # how the workflow is run.
@@ -24,6 +24,7 @@ ctrdb_path <- defaults$ctrdb_path
 tcga_rna_counts_dir <- defaults$tcga_rna_counts_dir
 gene_probe_map_path <- defaults$gene_probe_map_path
 output_base <- defaults$output_base
+override <- FALSE
 
 feature2_type <- "mRNA"
 data_type <- "all"
@@ -77,6 +78,7 @@ for (drug in drugs) {
       tcga_rna_counts_dir = tcga_rna_counts_dir,
       gene_probe_map_path = gene_probe_map_path,
       output_base = output_base,
+      override = override,
       verbose = TRUE
     )
     result_id <- result_id + 1L

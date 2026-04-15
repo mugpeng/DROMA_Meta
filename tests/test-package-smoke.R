@@ -1,10 +1,10 @@
-`%||%` <- function(x, y) {
+fallback_if_missing <- function(x, y) {
   if (is.null(x) || length(x) == 0 || !nzchar(x)) y else x
 }
 
 cmd_args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", cmd_args, value = TRUE)
-script_path <- sub("^--file=", "", file_arg[1] %||% "")
+script_path <- sub("^--file=", "", fallback_if_missing(file_arg[1], ""))
 script_dir <- if (nzchar(script_path)) dirname(normalizePath(script_path, mustWork = TRUE)) else getwd()
 root_dir <- normalizePath(file.path(script_dir, ".."), mustWork = TRUE)
 
@@ -55,9 +55,31 @@ stopifnot(is.null(defaults$valid_tumor_types_csv))
 stopifnot(is.null(defaults$batch_summary_csv))
 stopifnot(identical(defaults$droma_db_path, "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"))
 
+tmp_dir <- tempfile("package-smoke-")
+dir.create(tmp_dir, recursive = TRUE, showWarnings = FALSE)
+valid_drugs_csv <- file.path(tmp_dir, "valid_drugs.csv")
+valid_tumor_types_csv <- file.path(tmp_dir, "valid_tumor_types.csv")
+
+writeLines(
+  c(
+    "drug",
+    "DrugA",
+    "DrugB"
+  ),
+  valid_drugs_csv
+)
+writeLines(
+  c(
+    "tumor_type",
+    "TumorA",
+    "TumorB"
+  ),
+  valid_tumor_types_csv
+)
+
 grid <- buildDrugTumorGrid(
-  file.path(root_dir, "workflow", "Output", "valid_drugs.csv"),
-  file.path(root_dir, "workflow", "Output", "valid_tumor_types.csv")
+  valid_drugs_csv,
+  valid_tumor_types_csv
 )
 stopifnot(nrow(grid) > 0)
 stopifnot(all(c("drug", "tumor_type") %in% colnames(grid)))

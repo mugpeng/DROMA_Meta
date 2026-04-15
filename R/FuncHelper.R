@@ -1,14 +1,6 @@
 # Helper functions for DROMA.Meta ----
 
-#' Null-Coalescing Helper
-#'
-#' @description Returns `y` when `x` is NULL, empty, or a blank string.
-#' This is useful when package helpers need a compact fallback operator.
-#' @param x Primary value.
-#' @param y Fallback value.
-#' @return Either `x` or `y`.
-#' @export
-`%||%` <- function(x, y) {
+fallbackIfMissing <- function(x, y) {
   if (is.null(x) || length(x) == 0 || identical(x, "") || (is.character(x) && !nzchar(x[1]))) {
     y
   } else {

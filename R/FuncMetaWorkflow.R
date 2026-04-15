@@ -15,7 +15,7 @@ getMetaWorkflowDefaults <- function(project_root = "/Users/peng/Desktop/Project/
     ctrdb_path = "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite",
     tcga_rna_counts_dir = "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts",
     gene_probe_map_path = "/Users/peng/Desktop/Project/DROMA/Data/gencode.human.v49.annotation.gene.probeMap",
-    output_base = file.path(project_root, "workflow", "Output")
+    output_base = file.path(project_root, "Output")
   )
 }
 
@@ -115,6 +115,8 @@ buildDrugTumorGrid <- function(valid_drugs_csv, valid_tumor_types_csv) {
 #' @param tcga_rna_counts_dir Directory containing TCGA/TARGET counts.
 #' @param gene_probe_map_path Path to the probe-map file.
 #' @param output_base Base directory for workflow outputs.
+#' @param override Logical, whether to ignore existing output files and rerun
+#' all workflow stages.
 #' @param verbose Logical, whether to print progress messages.
 #' @return A one-row `data.table` summarizing workflow status and counts.
 #' @export
@@ -140,6 +142,7 @@ runMetaWorkflow <- function(drug,
                             tcga_rna_counts_dir = getMetaWorkflowDefaults()$tcga_rna_counts_dir,
                             gene_probe_map_path = getMetaWorkflowDefaults()$gene_probe_map_path,
                             output_base = getMetaWorkflowDefaults()$output_base,
+                            override = FALSE,
                             verbose = TRUE) {
   output_dir <- getMetaWorkflowOutputDir(
     drug = drug,
@@ -147,6 +150,37 @@ runMetaWorkflow <- function(drug,
     output_base = output_base
   )
   dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+
+  batch_cell_path <- file.path(output_dir, "batch_cell_sets_mRNA.csv")
+  batch_pdcpdx_path <- file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv")
+  mRNA_cell_sig_path <- file.path(output_dir, "mRNA_cell_sig.csv")
+  mRNA_pdcpdx_sig_path <- file.path(output_dir, "mRNA_pdcpdx_sig.csv")
+  selected_genes_path <- file.path(output_dir, "selected_genes.csv")
+  ad_stats_path <- file.path(output_dir, "selected_genes_ad_stats.csv")
+  ad_filtered_path <- file.path(output_dir, "selected_genes_ad_filtered.csv")
+  clinical_sig_path <- file.path(output_dir, "clinical_sig_mRNA.csv")
+  final_biomarkers_path <- file.path(output_dir, "final_biomarkers.csv")
+
+  stageFilesExist <- function(...) {
+    all(file.exists(c(...)))
+  }
+
+  readWorkflowCsv <- function(path) {
+    data.table::fread(path, data.table = TRUE)
+  }
+
+  con <- NULL
+  getCon <- function() {
+    if (is.null(con)) {
+      con <<- connectDROMADatabase(db_path)
+    }
+    con
+  }
+  on.exit({
+    if (!is.null(con)) {
+      try(close(con), silent = TRUE)
+    }
+  }, add = TRUE)
 
   if (verbose) {
     cat("\n============================================================\n")
@@ -162,56 +196,62 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 01: Batch Preclinical ===\n")
       }
 
-      con <- connectDROMADatabase(db_path)
-      on.exit(try(close(con), silent = TRUE), add = TRUE)
+      if (!override && stageFilesExist(batch_cell_path, batch_pdcpdx_path)) {
+        if (verbose) {
+          cat("  SKIP stage 01: existing outputs found\n")
+        }
+        batch_cell <- readWorkflowCsv(batch_cell_path)
+        batch_pdcpdx <- readWorkflowCsv(batch_pdcpdx_path)
+      } else {
+        con_local <- getCon()
+        project_anno <- listDROMAProjects()
 
-      project_anno <- listDROMAProjects()
+        cell_names_all <- project_anno[
+          project_anno$dataset_type %in% c("CellLine", "PDC"),
+          "project_name"
+        ]
+        cell_sets <- createMultiDromaSetFromAllProjects(
+          db_path = db_path,
+          include_projects = cell_names_all,
+          con = con_local
+        )
 
-      cell_names_all <- project_anno[
-        project_anno$dataset_type %in% c("CellLine", "PDC"),
-        "project_name"
-      ]
-      cell_sets <- createMultiDromaSetFromAllProjects(
-        db_path = db_path,
-        include_projects = cell_names_all,
-        con = con
-      )
+        pdcpdx_names_all <- project_anno[
+          project_anno$dataset_type %in% c("PDO", "PDX"),
+          "project_name"
+        ]
+        pdcpdx_sets <- createMultiDromaSetFromAllProjects(
+          db_path = db_path,
+          include_projects = pdcpdx_names_all,
+          con = con_local
+        )
 
-      pdcpdx_names_all <- project_anno[
-        project_anno$dataset_type %in% c("PDO", "PDX"),
-        "project_name"
-      ]
-      pdcpdx_sets <- createMultiDromaSetFromAllProjects(
-        db_path = db_path,
-        include_projects = pdcpdx_names_all,
-        con = con
-      )
+        batch_cell <- batchFindSignificantFeatures(
+          cell_sets,
+          feature1_type = "drug",
+          feature1_name = drug,
+          feature2_type = feature2_type,
+          data_type = data_type,
+          tumor_type = tumor_type,
+          overlap_only = FALSE,
+          cores = cores,
+          min_intersected_cells = cell_min_intersected_cells
+        )
+        data.table::fwrite(batch_cell, batch_cell_path)
 
-      batch_cell <- batchFindSignificantFeatures(
-        cell_sets,
-        feature1_type = "drug",
-        feature1_name = drug,
-        feature2_type = feature2_type,
-        data_type = data_type,
-        tumor_type = tumor_type,
-        overlap_only = FALSE,
-        cores = cores,
-        min_intersected_cells = cell_min_intersected_cells
-      )
-      data.table::fwrite(batch_cell, file.path(output_dir, "batch_cell_sets_mRNA.csv"))
-
-      batch_pdcpdx <- batchFindSignificantFeatures(
-        pdcpdx_sets,
-        feature1_type = "drug",
-        feature1_name = drug,
-        feature2_type = feature2_type,
-        data_type = data_type,
-        tumor_type = tumor_type,
-        overlap_only = FALSE,
-        cores = cores,
-        min_intersected_cells = pdcpdx_min_intersected_cells
-      )
-      data.table::fwrite(batch_pdcpdx, file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv"))
+        batch_pdcpdx <- batchFindSignificantFeatures(
+          pdcpdx_sets,
+          feature1_type = "drug",
+          feature1_name = drug,
+          feature2_type = feature2_type,
+          data_type = data_type,
+          tumor_type = tumor_type,
+          overlap_only = FALSE,
+          cores = cores,
+          min_intersected_cells = pdcpdx_min_intersected_cells
+        )
+        data.table::fwrite(batch_pdcpdx, batch_pdcpdx_path)
+      }
 
       if (verbose) {
         cat(sprintf("  OK batch_cell: %d rows\n", nrow(batch_cell)))
@@ -219,28 +259,37 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 02: Select Preclinical ===\n")
       }
 
-      mRNA_cell_sig <- getSignificantFeatures(
-        batch_cell,
-        es_t = cell_es_t,
-        P_t = cell_P_t,
-        use_p_value = TRUE,
-        n_datasets_t = cell_n_datasets_t
-      )
-      mRNA_pdcpdx_sig <- getSignificantFeatures(
-        batch_pdcpdx,
-        es_t = pdcpdx_es_t,
-        P_t = pdcpdx_P_t,
-        use_p_value = TRUE,
-        n_datasets_t = pdcpdx_n_datasets_t
-      )
-      selected_genes <- getIntersectSignificantFeatures(
-        cell = mRNA_cell_sig,
-        pdcpdx = mRNA_pdcpdx_sig
-      )
+      if (!override && stageFilesExist(mRNA_cell_sig_path, mRNA_pdcpdx_sig_path, selected_genes_path)) {
+        if (verbose) {
+          cat("  SKIP stage 02: existing outputs found\n")
+        }
+        mRNA_cell_sig <- readWorkflowCsv(mRNA_cell_sig_path)
+        mRNA_pdcpdx_sig <- readWorkflowCsv(mRNA_pdcpdx_sig_path)
+        selected_genes <- readWorkflowCsv(selected_genes_path)
+      } else {
+        mRNA_cell_sig <- getSignificantFeatures(
+          batch_cell,
+          es_t = cell_es_t,
+          P_t = cell_P_t,
+          use_p_value = TRUE,
+          n_datasets_t = cell_n_datasets_t
+        )
+        mRNA_pdcpdx_sig <- getSignificantFeatures(
+          batch_pdcpdx,
+          es_t = pdcpdx_es_t,
+          P_t = pdcpdx_P_t,
+          use_p_value = TRUE,
+          n_datasets_t = pdcpdx_n_datasets_t
+        )
+        selected_genes <- getIntersectSignificantFeatures(
+          cell = mRNA_cell_sig,
+          pdcpdx = mRNA_pdcpdx_sig
+        )
 
-      data.table::fwrite(mRNA_cell_sig, file.path(output_dir, "mRNA_cell_sig.csv"))
-      data.table::fwrite(mRNA_pdcpdx_sig, file.path(output_dir, "mRNA_pdcpdx_sig.csv"))
-      data.table::fwrite(selected_genes, file.path(output_dir, "selected_genes.csv"))
+        data.table::fwrite(mRNA_cell_sig, mRNA_cell_sig_path)
+        data.table::fwrite(mRNA_pdcpdx_sig, mRNA_pdcpdx_sig_path)
+        data.table::fwrite(selected_genes, selected_genes_path)
+      }
 
       if (verbose) {
         cat(sprintf("  OK mRNA_cell_sig: %d biomarkers\n", nrow(mRNA_cell_sig)))
@@ -249,30 +298,35 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 03: TCGA AD Filter ===\n")
       }
 
-      ccle_set <- createMultiDromaSetFromAllProjects(
-        db_path = db_path,
-        include_projects = "CCLE",
-        con = con
-      )
+      if (!override && stageFilesExist(ad_stats_path, ad_filtered_path)) {
+        if (verbose) {
+          cat("  SKIP stage 03: existing outputs found\n")
+        }
+        ad_stats <- readWorkflowCsv(ad_stats_path)
+        selected_genes_ad_filtered <- readWorkflowCsv(ad_filtered_path)
+      } else {
+        ccle_set <- createMultiDromaSetFromAllProjects(
+          db_path = db_path,
+          include_projects = "CCLE",
+          con = getCon()
+        )
 
-      ad_stats <- batchFindTcgaADConcordantFeatures(
-        selected_features = selected_genes,
-        preclinical_set = ccle_set,
-        tumor_type = tumor_type,
-        tcga_rna_counts_dir = tcga_rna_counts_dir,
-        gene_probe_map_path = gene_probe_map_path,
-        feature_type = feature2_type,
-        data_type = data_type,
-        p_t = tcga_ad_p_t,
-        preclinical_label = "ccle"
-      )
-      data.table::fwrite(ad_stats, file.path(output_dir, "selected_genes_ad_stats.csv"))
+        ad_stats <- batchFindTcgaADConcordantFeatures(
+          selected_features = selected_genes,
+          preclinical_set = ccle_set,
+          tumor_type = tumor_type,
+          tcga_rna_counts_dir = tcga_rna_counts_dir,
+          gene_probe_map_path = gene_probe_map_path,
+          feature_type = feature2_type,
+          data_type = data_type,
+          p_t = tcga_ad_p_t,
+          preclinical_label = "ccle"
+        )
+        data.table::fwrite(ad_stats, ad_stats_path)
 
-      selected_genes_ad_filtered <- ad_stats[get("ccle_vs_tcga_concordant") == TRUE]
-      data.table::fwrite(
-        selected_genes_ad_filtered,
-        file.path(output_dir, "selected_genes_ad_filtered.csv")
-      )
+        selected_genes_ad_filtered <- ad_stats[get("ccle_vs_tcga_concordant") == TRUE]
+        data.table::fwrite(selected_genes_ad_filtered, ad_filtered_path)
+      }
 
       if (verbose) {
         cat(sprintf("  OK selected_genes_ad_stats: %d biomarkers\n", nrow(ad_stats)))
@@ -280,60 +334,68 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 04: Clinical Validation ===\n")
       }
 
-      connectCTRDatabase(ctrdb_path)
-
-      clinical_batch <- tryCatch(
-        batchFindClinicalSigResponse(
-          select_omics = unique(selected_genes_ad_filtered$name),
-          select_drugs = drug,
-          data_type = data_type,
-          tumor_type = tumor_type,
-          cores = cores
-        ),
-        error = function(e) {
-          warning("Clinical validation returned no usable result: ", e$message, call. = FALSE)
-          createEmptyMetaDf()
+      if (!override && stageFilesExist(clinical_sig_path, final_biomarkers_path)) {
+        if (verbose) {
+          cat("  SKIP stage 04: existing outputs found\n")
         }
-      )
-
-      if (nrow(clinical_batch) > 0) {
-        clinical_sig <- getSignificantFeatures(
-          clinical_batch,
-          es_t = clinical_es_t,
-          P_t = clinical_P_t,
-          use_p_value = TRUE,
-          n_datasets_t = clinical_n_datasets_t
-        )
+        clinical_sig <- readWorkflowCsv(clinical_sig_path)
+        final_biomarkers <- readWorkflowCsv(final_biomarkers_path)
       } else {
-        clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
-      }
+        connectCTRDatabase(ctrdb_path)
 
-      if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
-        final_biomarkers <- getIntersectSignificantFeatures(
-          pdcpdx = as.data.frame(selected_genes_ad_filtered),
-          ctrdb = as.data.frame(clinical_sig),
-          direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
+        clinical_batch <- tryCatch(
+          batchFindClinicalSigResponse(
+            select_omics = unique(selected_genes_ad_filtered$name),
+            select_drugs = drug,
+            data_type = data_type,
+            tumor_type = tumor_type,
+            cores = cores
+          ),
+          error = function(e) {
+            warning("Clinical validation returned no usable result: ", e$message, call. = FALSE)
+            createEmptyMetaDf()
+          }
         )
 
-        if (nrow(final_biomarkers) > 0) {
-          final_biomarkers$drug <- drug
-          final_biomarkers$tumor_type <- tumor_type
+        if (nrow(clinical_batch) > 0) {
+          clinical_sig <- getSignificantFeatures(
+            clinical_batch,
+            es_t = clinical_es_t,
+            P_t = clinical_P_t,
+            use_p_value = TRUE,
+            n_datasets_t = clinical_n_datasets_t
+          )
+        } else {
+          clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
+        }
 
-          dir_cols <- grep("direction", names(final_biomarkers), value = TRUE)
-          if (length(dir_cols) > 0) {
-            final_biomarkers$direction <- final_biomarkers[[tail(dir_cols, 1)]]
-            cols_to_remove <- setdiff(dir_cols, "direction")
-            if (length(cols_to_remove) > 0) {
-              final_biomarkers[, cols_to_remove] <- NULL
+        if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
+          final_biomarkers <- getIntersectSignificantFeatures(
+            pdcpdx = as.data.frame(selected_genes_ad_filtered),
+            ctrdb = as.data.frame(clinical_sig),
+            direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
+          )
+
+          if (nrow(final_biomarkers) > 0) {
+            final_biomarkers$drug <- drug
+            final_biomarkers$tumor_type <- tumor_type
+
+            dir_cols <- grep("direction", names(final_biomarkers), value = TRUE)
+            if (length(dir_cols) > 0) {
+              final_biomarkers$direction <- final_biomarkers[[tail(dir_cols, 1)]]
+              cols_to_remove <- setdiff(dir_cols, "direction")
+              if (length(cols_to_remove) > 0) {
+                final_biomarkers[, cols_to_remove] <- NULL
+              }
             }
           }
+        } else {
+          final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
         }
-      } else {
-        final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
-      }
 
-      data.table::fwrite(clinical_sig, file.path(output_dir, "clinical_sig_mRNA.csv"))
-      data.table::fwrite(final_biomarkers, file.path(output_dir, "final_biomarkers.csv"))
+        data.table::fwrite(clinical_sig, clinical_sig_path)
+        data.table::fwrite(final_biomarkers, final_biomarkers_path)
+      }
 
       if (verbose) {
         cat(sprintf("  OK clinical_sig: %d biomarkers\n", nrow(clinical_sig)))

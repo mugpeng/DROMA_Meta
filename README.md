@@ -72,13 +72,15 @@ runMetaWorkflow(
   ctrdb_path,
   tcga_rna_counts_dir,
   gene_probe_map_path,
-  output_base
+  output_base,
+  override = FALSE
 )
 ```
 
 This function runs one full workflow for one `drug` and one `tumor_type`, and
 returns a one-row summary table while writing intermediate outputs to the
-workflow output directory.
+workflow output directory. When `override = FALSE`, existing stage outputs under
+`output_base/<drug>/<tumor_type>/` are reused and those stages are skipped.
 
 ### Driver Script
 
@@ -150,7 +152,8 @@ result <- runMetaWorkflow(
   ctrdb_path = "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite",
   tcga_rna_counts_dir = "/path/to/tcga/rna_counts",
   gene_probe_map_path = "/path/to/gencode.human.v49.annotation.gene.probeMap",
-  output_base = "workflow/Output"
+  output_base = "workflow/Output",
+  override = FALSE
 )
 
 print(result)

@@ -280,7 +280,8 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
     overlap_only = FALSE,
     is_continuous = TRUE,
     zscore = FALSE
-  ) %||% list()
+  )
+  preclinical_data <- fallbackIfMissing(preclinical_data, list())
   tcga_data <- loadTcgaFeatureData(
     select_features = genes,
     tcga_tumor_type = tcga_tumor_type,
@@ -318,7 +319,7 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
 
     preclinical_values <- collectValues(preclinical_data, gene)
     tcga_row <- tcga_data[[gene]]
-    tcga_values <- tcga_row$tcga_values %||% numeric()
+    tcga_values <- fallbackIfMissing(tcga_row$tcga_values, numeric())
     ad_result <- calcFeatureADConcordance(preclinical_values, tcga_values, p_t = p_t)
 
     ad_status <- c(

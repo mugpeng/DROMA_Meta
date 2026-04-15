@@ -27,6 +27,7 @@ runMetaWorkflow(
   tcga_rna_counts_dir = getMetaWorkflowDefaults()$tcga_rna_counts_dir,
   gene_probe_map_path = getMetaWorkflowDefaults()$gene_probe_map_path,
   output_base = getMetaWorkflowDefaults()$output_base,
+  override = FALSE,
   verbose = TRUE
 )
 }
@@ -74,6 +75,9 @@ runMetaWorkflow(
 \item{gene_probe_map_path}{Path to the probe-map file.}
 
 \item{output_base}{Base directory for workflow outputs.}
+
+\item{override}{Logical, whether to ignore existing output files and rerun
+all workflow stages.}
 
 \item{verbose}{Logical, whether to print progress messages.}
 }
