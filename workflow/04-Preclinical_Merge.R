@@ -1,10 +1,10 @@
-source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
+source(file.path(".", "workflow", "00a-Setup.R"), local = FALSE)
 
 cat("\n=== 04: Preclinical merge ===\n")
-dir.create(file.path(workflow_config$output_base, "05-preclinical-merge"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(workflow_config$output_base, "04-preclinical-merge"), recursive = TRUE, showWarnings = FALSE)
 
-meta_results <- read_stage("03-meta", "meta_results.rds")
-tcga_results <- read_stage("04-tcga-filter", "tcga_results.rds")
+meta_results <- read_stage("02-meta", "meta_results.rds")
+tcga_results <- read_stage("03-tcga-filter", "tcga_results.rds")
 
 merged_candidates <- mergePreclinicalCandidates(
   cellline_meta = meta_results$cellline,
@@ -16,7 +16,7 @@ merged_candidates <- mergePreclinicalCandidates(
   p_t = workflow_config$meta_p_t
 )
 
-merged_candidates2 <- merged_candidates[merged_candidates$tcga_supported %in% TRUE,]
+merged_candidates <- merged_candidates[merged_candidates$tcga_supported %in% TRUE,]
 
-save_stage(merged_candidates, "05-preclinical-merge", "merged_candidates.rds")
-fwrite(merged_candidates, file.path(workflow_config$output_base, "05-preclinical-merge", "merged_candidates.csv"))
+save_stage(merged_candidates, "04-preclinical-merge", "merged_candidates.rds")
+fwrite(merged_candidates, file.path(workflow_config$output_base, "04-preclinical-merge", "merged_candidates.csv"))

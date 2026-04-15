@@ -14,6 +14,9 @@ test_that("createWorkflowProjectGroups splits projects by dataset type", {
 test_that("mapTumorTypeToTcgaCode maps common tumor names", {
   expect_equal(mapTumorTypeToTcgaCode("breast cancer"), "TCGA-BRCA")
   expect_equal(mapTumorTypeToTcgaCode("lung cancer"), "TCGA-LUAD")
+  expect_equal(mapTumorTypeToTcgaCode("haematopoietic/lymphoid cancer"), "TCGA-LAML")
+  expect_equal(mapTumorTypeToTcgaCode("retinoblastoma"), "TARGET-RT")
+  expect_null(mapTumorTypeToTcgaCode("vulvar cancer"))
   expect_null(mapTumorTypeToTcgaCode("unknown tumor"))
 })
 

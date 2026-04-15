@@ -1,11 +1,11 @@
-source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
+source(file.path(".", "workflow", "00a-Setup.R"), local = FALSE)
 
 cat("\n=== 01: Coverage filter ===\n")
 con <- DROMA.Set::connectDROMADatabase(workflow_config$db_path)
 on.exit(DROMA.Set::closeDROMADatabase(con), add = TRUE)
-dir.create(file.path(workflow_config$output_base, "02-coverage"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(workflow_config$output_base, "01-coverage"), recursive = TRUE, showWarnings = FALSE)
 
-project_groups <- read_stage("01-projects", "project_groups.rds")
+project_groups <- read_project_grouping("project_groups")
 coverage_results <- list()
 
 for (group_name in names(project_groups)) {
@@ -23,12 +23,12 @@ for (group_name in names(project_groups)) {
   )
   fwrite(
     coverage_results[[group_name]]$coverage,
-    file.path(workflow_config$output_base, "02-coverage", paste0(group_name, "_coverage.csv"))
+    file.path(workflow_config$output_base, "01-coverage", paste0(group_name, "_coverage.csv"))
   )
   fwrite(
     coverage_results[[group_name]]$candidates_save,
-    file.path(workflow_config$output_base, "02-coverage", paste0(group_name, "_candidates.csv"))
+    file.path(workflow_config$output_base, "01-coverage", paste0(group_name, "_candidates.csv"))
   )
 }
 
-save_stage(coverage_results, "02-coverage", "coverage_results.rds")
+save_stage(coverage_results, "01-coverage", "coverage_results.rds")

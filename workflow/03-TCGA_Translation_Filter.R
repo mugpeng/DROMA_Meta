@@ -1,10 +1,10 @@
-source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
+source(file.path(".", "workflow", "00a-Setup.R"), local = FALSE)
 
 cat("\n=== 03: TCGA translation filter ===\n")
-dir.create(file.path(workflow_config$output_base, "04-tcga-filter"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(workflow_config$output_base, "03-tcga-filter"), recursive = TRUE, showWarnings = FALSE)
 
-group_sets <- read_stage("01-projects", "group_sets.rds")
-preclinical_candidates <- read_stage("03-meta", "preclinical_candidates.rds")
+group_sets <- read_project_grouping("group_sets")
+preclinical_candidates <- read_stage("02-meta", "preclinical_candidates.rds")
 preclinical_candidates2 <- preclinical_candidates[preclinical_candidates$direction_concordant %in% TRUE,]
 
 tcga_results <- runTcgaTranslationFilter(
@@ -18,5 +18,5 @@ tcga_results <- runTcgaTranslationFilter(
   gene_probe_map = workflow_config$gene_probe_map
 )
 
-save_stage(tcga_results, "04-tcga-filter", "tcga_results.rds")
-fwrite(tcga_results, file.path(workflow_config$output_base, "04-tcga-filter", "tcga_results.csv"))
+save_stage(tcga_results, "03-tcga-filter", "tcga_results.rds")
+fwrite(tcga_results, file.path(workflow_config$output_base, "03-tcga-filter", "tcga_results.csv"))

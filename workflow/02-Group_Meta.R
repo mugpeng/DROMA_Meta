@@ -1,11 +1,11 @@
-source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
+source(file.path(".", "workflow", "00a-Setup.R"), local = FALSE)
 
 cat("\n=== 02: Group meta ===\n")
-dir.create(file.path(workflow_config$output_base, "03-meta"), recursive = TRUE, showWarnings = FALSE)
+dir.create(file.path(workflow_config$output_base, "02-meta"), recursive = TRUE, showWarnings = FALSE)
 
-group_sets <- read_stage("01-projects", "group_sets.rds")
-shared_features <- read_stage("01-projects", "shared_features.rds")
-coverage_results <- read_stage("02-coverage", "coverage_results.rds")
+group_sets <- read_project_grouping("group_sets")
+shared_features <- read_project_grouping("shared_features")
+coverage_results <- read_stage("01-coverage", "coverage_results.rds")
 meta_results <- list()
 sig_results <- list()
 
@@ -80,8 +80,8 @@ for (group_name in names(group_sets)) {
     ]
   }
 
-  fwrite(meta_results[[group_name]], file.path(workflow_config$output_base, "03-meta", paste0(group_name, "_meta.csv")))
-  fwrite(sig_results[[group_name]], file.path(workflow_config$output_base, "03-meta", paste0(group_name, "_meta_sig.csv")))
+  fwrite(meta_results[[group_name]], file.path(workflow_config$output_base, "02-meta", paste0(group_name, "_meta.csv")))
+  fwrite(sig_results[[group_name]], file.path(workflow_config$output_base, "02-meta", paste0(group_name, "_meta_sig.csv")))
 }
 
 preclinical_candidates <- mergePreclinicalCandidates(
@@ -93,7 +93,7 @@ preclinical_candidates <- mergePreclinicalCandidates(
   p_t = workflow_config$meta_p_t
 )
 
-save_stage(meta_results, "03-meta", "meta_results.rds")
-save_stage(sig_results, "03-meta", "sig_results.rds")
-save_stage(preclinical_candidates, "03-meta", "preclinical_candidates.rds")
-fwrite(preclinical_candidates, file.path(workflow_config$output_base, "03-meta", "preclinical_candidates.csv"))
+save_stage(meta_results, "02-meta", "meta_results.rds")
+save_stage(sig_results, "02-meta", "sig_results.rds")
+save_stage(preclinical_candidates, "02-meta", "preclinical_candidates.rds")
+fwrite(preclinical_candidates, file.path(workflow_config$output_base, "02-meta", "preclinical_candidates.csv"))

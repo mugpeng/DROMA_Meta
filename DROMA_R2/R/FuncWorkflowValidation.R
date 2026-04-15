@@ -1,28 +1,42 @@
 # TCGA and clinical validation helpers ----
 
 mapTumorTypeToTcgaCode <- function(tumor_type) {
-  tumor_map <- c(
-    "breast cancer" = "TCGA-BRCA",
-    "lung adenocarcinoma" = "TCGA-LUAD",
+  cancer_to_project_simple <- c(
+    "haematopoietic/lymphoid cancer" = "TCGA-LAML",
+    "nervous system cancer" = "TCGA-GBM",
+    "sarcoma" = "TCGA-SARC",
     "lung cancer" = "TCGA-LUAD",
-    "lung squamous cell carcinoma" = "TCGA-LUSC",
-    "colon cancer" = "TCGA-COAD",
-    "rectal cancer" = "TCGA-READ",
-    "pancreatic cancer" = "TCGA-PAAD",
-    "ovarian cancer" = "TCGA-OV",
+    "breast cancer" = "TCGA-BRCA",
     "prostate cancer" = "TCGA-PRAD",
-    "liver cancer" = "TCGA-LIHC",
     "stomach cancer" = "TCGA-STAD",
-    "melanoma" = "TCGA-SKCM",
-    "glioma" = "TCGA-LGG",
-    "glioblastoma" = "TCGA-GBM",
-    "head and neck cancer" = "TCGA-HNSC"
+    "bladder cancer" = "TCGA-BLCA",
+    "skin cancer" = "TCGA-SKCM",
+    "ovarian cancer" = "TCGA-OV",
+    "kidney cancer" = "TCGA-KIRC",
+    "thyroid cancer" = "TCGA-THCA",
+    "aerodigestive tract cancer" = "TCGA-HNSC",
+    "vulvar cancer" = NA_character_,
+    "endometrial cancer" = "TCGA-UCEC",
+    "non-cancer" = NA_character_,
+    "colon cancer" = "TCGA-COAD",
+    "pancreatic cancer" = "TCGA-PAAD",
+    "cervical cancer" = "TCGA-CESC",
+    "liver cancer" = "TCGA-LIHC",
+    "choriocarcinoma" = NA_character_,
+    "uterine cancer" = "TCGA-UCS",
+    "testicular cancer" = "TCGA-TGCT",
+    "nasopharyngeal cancer" = NA_character_,
+    "retinoblastoma" = "TARGET-RT"
   )
   key <- tolower(tumor_type)
-  if (!key %in% names(tumor_map)) {
+  if (!key %in% names(cancer_to_project_simple)) {
     return(NULL)
   }
-  unname(tumor_map[[key]])
+  project_code <- unname(cancer_to_project_simple[[key]])
+  if (is.na(project_code) || !nzchar(project_code)) {
+    return(NULL)
+  }
+  project_code
 }
 
 loadTcgaExpressionVector <- local({
@@ -399,89 +413,4 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
     message(sprintf("TCGA translation filter completed in %.1fs", elapsed))
   }
   tcga_dt[]
-}
-
-runClinicalValidationForCandidates <- function(candidate_df,
-                                               drug_name,
-                                               tumor_type,
-                                               ctrdb_path,
-                                               cores = 1L,
-                                               es_t = 0.1,
-                                               fdr_t = 0.1) {
-  candidate_df <- data.table::as.data.table(candidate_df)
-  if (nrow(candidate_df) == 0) {
-    return(candidate_df)
-  }
-
-  DROMA.Set::connectCTRDatabase(ctrdb_path)
-  on.exit({
-    if (exists("ctrdb_connection", envir = .GlobalEnv)) {
-      rm("ctrdb_connection", envir = .GlobalEnv)
-    }
-  }, add = TRUE)
-
-  run_one_scope <- function(scope) {
-    tryCatch(
-      DROMA.R::batchFindClinicalSigResponse(
-        select_omics = candidate_df$name,
-        select_drugs = drug_name,
-        data_type = "all",
-        tumor_type = scope,
-        cores = cores
-      ),
-      error = function(e) NULL
-    )
-  }
-
-  clinical_df <- run_one_scope(tumor_type)
-  clinical_scope <- tumor_type
-  fallback_to_all <- FALSE
-  if (is.null(clinical_df) || !is.data.frame(clinical_df) || nrow(clinical_df) == 0) {
-    clinical_df <- run_one_scope("all")
-    clinical_scope <- "all"
-    fallback_to_all <- TRUE
-  }
-
-  if (is.null(clinical_df) || !is.data.frame(clinical_df) || nrow(clinical_df) == 0) {
-    out <- data.table::copy(candidate_df)
-    out[, `:=`(
-      clinical_scope = clinical_scope,
-      fallback_to_all = fallback_to_all,
-      clinical_supported = FALSE,
-      direction_clinical = NA_character_,
-      direction_concordant = FALSE,
-      retained = FALSE
-    )]
-    return(out)
-  }
-
-  clinical_candidates <- getClinicalCandidateFeatures(
-        select_omics = candidate_df$name,
-    clinical_results = clinical_df,
-    es_t = es_t,
-    P_t = fdr_t,
-    use_p_value = FALSE
-  )
-
-  if (!"direction" %in% colnames(clinical_df) && "effect_size" %in% colnames(clinical_df)) {
-    clinical_df$direction <- ifelse(clinical_df$effect_size >= 0, "Up", "Down")
-  }
-
-  merged <- merge(
-    candidate_df,
-    clinical_df[, c("name", "p_value", "q_value", "effect_size", "n_datasets", "direction"), with = FALSE],
-    by = "name",
-    all.x = TRUE,
-    suffixes = c("_preclinical", "_clinical")
-  )
-  merged[, `:=`(
-    clinical_scope = clinical_scope,
-    fallback_to_all = fallback_to_all,
-    clinical_supported = name %in% clinical_candidates$name,
-    direction_clinical = direction,
-    preclinical_direction_concordant = direction_concordant
-  )]
-  merged[, direction_concordant := clinical_supported & !is.na(direction_clinical) & preclinical_direction == direction_clinical]
-  merged[, retained := clinical_supported & direction_concordant]
-  merged[]
 }

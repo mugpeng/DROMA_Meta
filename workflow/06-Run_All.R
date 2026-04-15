@@ -1,6 +1,7 @@
 script_dir <- file.path(".", "workflow")
 
 steps <- c(
+  "00b-Project_Grouping.R",
   "01-Coverage_Filter.R",
   "02-Group_Meta.R",
   "03-TCGA_Translation_Filter.R",
