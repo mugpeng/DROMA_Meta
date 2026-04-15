@@ -339,7 +339,7 @@ runMetaWorkflow <- function(drug,
         )
         data.table::fwrite(ad_stats, ad_stats_path)
 
-        selected_genes_ad_filtered <- ad_stats[get("ccle_vs_tcga_concordant") == TRUE]
+        selected_genes_ad_filtered <- ad_stats[ad_stats[["ccle_vs_tcga_concordant"]] == TRUE, ]
         data.table::fwrite(selected_genes_ad_filtered, ad_filtered_path)
       }
 

@@ -296,7 +296,10 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
     }
 
     for (dataset in preloaded_data) {
-      if (!is.matrix(dataset) || !gene %in% rownames(dataset)) {
+      has_gene <- is.matrix(dataset) &&
+        !is.null(rownames(dataset)) &&
+        isTRUE(gene %in% rownames(dataset))
+      if (!has_gene) {
         next
       }
       gene_values <- suppressWarnings(as.numeric(dataset[gene, , drop = TRUE]))
@@ -314,11 +317,11 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
   n_col <- paste0(preclinical_label, "_n")
 
   ad_rows <- lapply(seq_len(nrow(selected_dt)), function(i) {
-    row <- selected_dt[i]
-    gene <- as.character(row$name[[1]])
+    row <- selected_dt[i, ]
+    gene <- as.character(selected_dt[["name"]][i])
 
     preclinical_values <- collectValues(preclinical_data, gene)
-    tcga_row <- tcga_data[[gene]]
+    tcga_row <- fallbackIfMissing(tcga_data[[gene]], list())
     tcga_values <- fallbackIfMissing(tcga_row$tcga_values, numeric())
     ad_result <- calcFeatureADConcordance(preclinical_values, tcga_values, p_t = p_t)
 
