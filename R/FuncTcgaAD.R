@@ -271,7 +271,7 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
     stop("preclinical_set must be a MultiDromaSet object", call. = FALSE)
   }
 
-  preclinical_data <- loadFeatureData(
+  preclinical_data <- DROMA.R::loadFeatureData(
     dromaset_object = preclinical_set,
     feature_type = feature_type,
     select_features = genes,
