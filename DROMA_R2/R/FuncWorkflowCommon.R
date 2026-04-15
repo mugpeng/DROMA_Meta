@@ -1,7 +1,7 @@
 buildWorkflowConfig <- function(repo_root,
                                 db_path = file.path(repo_root, "Data", "droma.sqlite"),
                                 ctrdb_path = file.path(repo_root, "Data", "ctrdb.sqlite"),
-                                tcga_dir = "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts",
+                                tcga_dir = file.path(repo_root, "Data", "TCGA", "rna_counts"),
                                 output_base,
                                 drug_names = "Paclitaxel",
                                 tumor_types = "breast cancer",
@@ -60,25 +60,6 @@ createWorkflowProjectGroups <- function(project_anno, groups = NULL) {
   lapply(groups, function(dataset_types) {
     sort(unique(project_anno$project_name[project_anno$dataset_type %in% dataset_types]))
   })
-}
-
-createWorkflowGroupSet <- function(db_path, con, project_names) {
-  DROMA.Set::createMultiDromaSetFromAllProjects(
-    db_path = db_path,
-    include_projects = sort(unique(project_names)),
-    con = con
-  )
-}
-
-subsetWorkflowGroupSet <- function(group_set, project_names) {
-  keep_projects <- intersect(unique(as.character(project_names)), names(group_set@DromaSets))
-  if (length(keep_projects) == 0) {
-    stop("No matching projects found in group_set")
-  }
-  DROMA.Set::createMultiDromaSetFromObjects(
-    group_set@DromaSets[keep_projects],
-    project_names = keep_projects
-  )
 }
 
 getSharedGroupFeatures <- function(group_sets, feature_type = "mRNA") {

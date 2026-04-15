@@ -1,6 +1,6 @@
-source(file.path(if (basename(getwd()) == "workflow") "." else "workflow", "00-Workflow_Common.R"), local = FALSE)
+source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
 
-cat("\n=== Step 2: Stage1 Coverage Filter ===\n")
+cat("\n=== 01: Coverage filter ===\n")
 con <- DROMA.Set::connectDROMADatabase(workflow_config$db_path)
 on.exit(DROMA.Set::closeDROMADatabase(con), add = TRUE)
 dir.create(file.path(workflow_config$output_base, "02-coverage"), recursive = TRUE, showWarnings = FALSE)

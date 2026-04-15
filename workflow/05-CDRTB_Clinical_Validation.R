@@ -1,6 +1,6 @@
-source(file.path(if (basename(getwd()) == "workflow") "." else "workflow", "00-Workflow_Common.R"), local = FALSE)
+source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
 
-cat("\n=== Step 6: Stage5 CDRTB Clinical Validation ===\n")
+cat("\n=== 05: CDRTB clinical validation ===\n")
 dir.create(file.path(workflow_config$output_base, "06-clinical-validation"), recursive = TRUE, showWarnings = FALSE)
 
 merged_candidates <- read_stage("05-preclinical-merge", "merged_candidates.rds")

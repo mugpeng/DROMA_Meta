@@ -1,6 +1,6 @@
-source(file.path(if (basename(getwd()) == "workflow") "." else "workflow", "00-Workflow_Common.R"), local = FALSE)
+source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
 
-cat("\n=== Step 5: Stage4 Preclinical Merge ===\n")
+cat("\n=== 04: Preclinical merge ===\n")
 dir.create(file.path(workflow_config$output_base, "05-preclinical-merge"), recursive = TRUE, showWarnings = FALSE)
 
 meta_results <- read_stage("03-meta", "meta_results.rds")

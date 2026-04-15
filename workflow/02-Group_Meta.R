@@ -1,6 +1,6 @@
-source(file.path(if (basename(getwd()) == "workflow") "." else "workflow", "00-Workflow_Common.R"), local = FALSE)
+source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
 
-cat("\n=== Step 3: Stage2 Group Meta ===\n")
+cat("\n=== 02: Group meta ===\n")
 dir.create(file.path(workflow_config$output_base, "03-meta"), recursive = TRUE, showWarnings = FALSE)
 
 group_sets <- read_stage("01-projects", "group_sets.rds")
@@ -18,7 +18,11 @@ for (group_name in names(group_sets)) {
       drug_name <- runtime_dt$drug[[i]]
       tumor_type <- runtime_dt$tumor_type[[i]]
       filtered_projects <- runtime_dt$filtered_projects[[i]]
-      filtered_group_set <- subsetWorkflowGroupSet(group_sets[[group_name]], filtered_projects)
+      keep_projects <- intersect(unique(as.character(filtered_projects)), names(group_sets[[group_name]]@DromaSets))
+      filtered_group_set <- DROMA.Set::createMultiDromaSetFromObjects(
+        group_sets[[group_name]]@DromaSets[keep_projects],
+        project_names = keep_projects
+      )
       meta_dt <- batchFindSignificantFeatures(
         dromaset_object = filtered_group_set,
         feature1_type = "drug",

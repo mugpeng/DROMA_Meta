@@ -1,6 +1,6 @@
-source(file.path(if (basename(getwd()) == "workflow") "." else "workflow", "00-Workflow_Common.R"), local = FALSE)
+source(file.path(".", "workflow", "00-Setup.R"), local = FALSE)
 
-cat("\n=== Step 4: Stage3 TCGA Translation Filter ===\n")
+cat("\n=== 03: TCGA translation filter ===\n")
 dir.create(file.path(workflow_config$output_base, "04-tcga-filter"), recursive = TRUE, showWarnings = FALSE)
 
 group_sets <- read_stage("01-projects", "group_sets.rds")

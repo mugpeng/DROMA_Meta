@@ -1,5 +1,4 @@
 export(buildWorkflowConfig)
-export(createWorkflowGroupSet)
 export(createWorkflowProjectGroups)
 export(computeCoverageForGroup)
 export(getSharedGroupFeatures)
