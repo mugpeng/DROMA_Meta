@@ -1,127 +1,104 @@
-# Workflow Meta Functions ----
+# Meta-analysis and merge helpers ----
 
-#' Convert workflow screening output into stage-3 meta results
-#'
-#' @description The workflow now reuses
-#'   \code{DROMA.R::batchFindSignificantFeatures()} for grouped Spearman
-#'   screening, so stage 3 mainly standardizes and annotates the resulting
-#'   meta-analysis table for downstream workflow stages.
-#' @param within_study_dt Data frame returned by \code{runWithinStudyScreen()}.
-#' @param model_group Workflow model group label, typically \code{"invitro"}
-#'   or \code{"invivo"}.
-#' @param fdr_t FDR threshold retained for interface compatibility.
-#' @param es_t Effect-size threshold retained for interface compatibility.
-#' @param min_studies Minimum dataset count required to keep a feature.
-#' @return A standardized meta-analysis result table.
-#' @export
-runGroupedMetaAnalysis <- function(within_study_dt,
-                                   model_group,
-                                   fdr_t = 0.1,
-                                   es_t = 0.1,
-                                   min_studies = 2L) {
-  if (!is.data.frame(within_study_dt) || nrow(within_study_dt) == 0) {
+runGroupedMetaAnalysis <- function(group_set,
+                                   group_name,
+                                   drug_name,
+                                   tumor_type,
+                                   feature_names,
+                                   feature_type = "mRNA",
+                                   cores = 1L,
+                                   preloaded = TRUE) {
+  if (length(feature_names) == 0) {
     return(.empty_meta())
   }
 
-  meta_dt <- data.table::as.data.table(within_study_dt)
-  keep_idx <- is.finite(meta_dt[["effect_size"]]) &
-    !is.na(meta_dt[["effect_size"]]) &
-    is.finite(meta_dt[["p_value"]]) &
-    !is.na(meta_dt[["p_value"]]) &
-    !is.na(meta_dt[["n_datasets"]]) &
-    meta_dt[["n_datasets"]] >= min_studies
-  meta_dt <- meta_dt[keep_idx, ]
-  if (nrow(meta_dt) == 0) {
+  meta_dt <- batchFindSignificantFeatures(
+    dromaset_object = group_set,
+    feature1_type = "drug",
+    feature1_name = drug_name,
+    feature2_type = feature_type,
+    feature2_name = feature_names,
+    data_type = "all",
+    tumor_type = tumor_type,
+    overlap_only = FALSE,
+    cores = as.integer(cores),
+    show_progress = FALSE,
+    preloaded = preloaded,
+    verbose = FALSE
+  )
+  if (!is.data.frame(meta_dt) || nrow(meta_dt) == 0) {
     return(.empty_meta())
   }
 
-  meta_dt <- unique(meta_dt[, c(
-    "drug", "tumor_type", "gene", "p_value",
-    "q_value", "effect_size", "n_datasets"
-  ), with = FALSE])
-  data.table::setnames(meta_dt, "gene", "name")
-
-  if (!"q_value" %in% colnames(meta_dt) || all(is.na(meta_dt$q_value))) {
+  meta_dt <- data.table::as.data.table(meta_dt)
+  data.table::setnames(meta_dt, "name", "name", skip_absent = TRUE)
+  if (!"q_value" %in% colnames(meta_dt)) {
     meta_dt[, q_value := stats::p.adjust(p_value, method = "BH")]
   }
+  meta_dt[, `:=`(
+    drug = drug_name,
+    tumor_type = tumor_type,
+    model_group = group_name,
+    heterogeneity_p = if ("pval.Q" %in% colnames(meta_dt)) pval.Q else NA_real_,
+    i2 = if ("I2" %in% colnames(meta_dt)) I2 else NA_real_,
+    direction = ifelse(effect_size >= 0, "Up", "Down")
+  )]
 
-  meta_dt <- meta_dt[abs(meta_dt[["effect_size"]]) >= es_t, ]
-  if (nrow(meta_dt) == 0) {
-    return(.empty_meta())
-  }
-
-  meta_dt[["model_group"]] <- model_group
-  meta_dt[["heterogeneity_p"]] <- NA_real_
-  meta_dt[["i2"]] <- NA_real_
-
-  data.table::setcolorder(
-    meta_dt,
-    c(
-      "drug", "tumor_type", "name", "p_value", "q_value",
-      "effect_size", "n_datasets", "model_group",
-      "heterogeneity_p", "i2"
-    )
+  keep_cols <- c(
+    "drug", "tumor_type", "name", "p_value", "q_value", "effect_size",
+    "n_datasets", "model_group", "heterogeneity_p", "i2", "direction"
   )
-  meta_dt[]
+  for (col in keep_cols) {
+    if (!col %in% colnames(meta_dt)) {
+      meta_dt[, (col) := NA]
+    }
+  }
+  unique(meta_dt[, ..keep_cols])
 }
 
-#' Merge preclinical candidate tables across workflow groups
-#'
-#' @description Filters significant meta-analysis hits for the in vitro and in
-#'   vivo groups, merges them by feature name, and records directional
-#'   concordance across evidence sources.
-#' @param invitro_meta In vitro meta-analysis result table.
-#' @param invivo_meta In vivo meta-analysis result table.
-#' @param fdr_t FDR threshold.
-#' @param es_t Effect-size threshold.
-#' @return A merged candidate table.
-#' @export
-mergePreclinicalCandidates <- function(invitro_meta, invivo_meta, fdr_t = 0.1, es_t = 0.1) {
+mergePreclinicalCandidates <- function(cellline_meta,
+                                       pdcpdx_meta,
+                                       tcga_results = NULL,
+                                       fdr_t = 0.1,
+                                       es_t = 0.1) {
   to_sig <- function(dt, suffix) {
     dt <- data.table::as.data.table(dt)
-    keep_idx <- dt[["q_value"]] < fdr_t & abs(dt[["effect_size"]]) >= es_t
-    keep_idx[is.na(keep_idx)] <- FALSE
-    dt <- dt[keep_idx, ]
     if (nrow(dt) == 0) {
-      return(data.table::data.table(name = character()))
+      return(data.table::data.table(name = character(), drug = character(), tumor_type = character()))
     }
-    out <- dt[, c("name", "effect_size", "q_value", "n_datasets"), with = FALSE]
+    keep <- dt$q_value < fdr_t & abs(dt$effect_size) >= es_t
+    keep[is.na(keep)] <- FALSE
+    dt <- dt[keep]
+    if (nrow(dt) == 0) {
+      return(data.table::data.table(name = character(), drug = character(), tumor_type = character()))
+    }
+    out <- unique(dt[, .(drug, tumor_type, name, effect_size, q_value, n_datasets, direction)])
     data.table::setnames(
       out,
-      c("effect_size", "q_value", "n_datasets"),
-      paste0(c("effect_size", "q_value", "n_datasets"), "_", suffix)
+      c("effect_size", "q_value", "n_datasets", "direction"),
+      paste0(c("effect_size", "q_value", "n_datasets", "direction"), "_", suffix)
     )
-    direction_col <- paste0("direction_", suffix)
-    effect_col <- paste0("effect_size_", suffix)
-    out[[direction_col]] <- ifelse(out[[effect_col]] >= 0, "Up", "Down")
     out
   }
 
-  cell_sig <- to_sig(invitro_meta, "cell")
-  invivo_sig <- to_sig(invivo_meta, "invivo")
-  merged <- merge(cell_sig, invivo_sig, by = "name", all = TRUE)
+  cell_sig <- to_sig(cellline_meta, "cellline")
+  pdcpdx_sig <- to_sig(pdcpdx_meta, "pdcpdx")
+  merged <- merge(cell_sig, pdcpdx_sig, by = c("drug", "tumor_type", "name"))
   if (nrow(merged) == 0) {
     return(merged)
   }
 
-  needed_cols <- c(
-    "effect_size_cell", "q_value_cell", "n_datasets_cell", "direction_cell",
-    "effect_size_invivo", "q_value_invivo", "n_datasets_invivo", "direction_invivo"
-  )
-  for (col in needed_cols) {
-    if (!col %in% colnames(merged)) {
-      merged[[col]] <- NA
-    }
+  merged[, `:=`(
+    invitro_supported = TRUE,
+    pdcpdx_supported = TRUE,
+    direction_concordant = direction_cellline == direction_pdcpdx,
+    preclinical_direction = ifelse(effect_size_cellline + effect_size_pdcpdx >= 0, "Up", "Down"),
+    effect_size = rowMeans(cbind(effect_size_cellline, effect_size_pdcpdx), na.rm = TRUE)
+  )]
+
+  if (!is.null(tcga_results) && nrow(tcga_results) > 0) {
+    merged <- merge(merged, tcga_results, by = c("drug", "tumor_type", "name"), all.x = TRUE)
   }
 
-  merged[["invitro_supported"]] <- !is.na(merged[["effect_size_cell"]])
-  merged[["invivo_supported"]] <- !is.na(merged[["effect_size_invivo"]])
-  merged[["direction_concordant"]] <- merged[["invitro_supported"]] &
-    merged[["invivo_supported"]] &
-    merged[["direction_cell"]] == merged[["direction_invivo"]]
-  merged[["effect_size"]] <- rowMeans(
-    cbind(merged[["effect_size_cell"]], merged[["effect_size_invivo"]]),
-    na.rm = TRUE
-  )
   merged[]
 }

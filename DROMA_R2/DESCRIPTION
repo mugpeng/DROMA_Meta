@@ -1,29 +1,13 @@
 Package: DROMA.R2
-Title: Grouped Meta Screening Workflow Extensions for DROMA
+Type: Package
+Title: Lightweight Meta Workflow Helpers for DROMA
 Version: 0.1.0
-Date: 2026-04-14
-Authors@R:
-    person("Peng Yu", "Zhong", email = "yc47680@um.edu.mo", role = c("aut", "cre"))
-Description: A workflow-oriented extension package for grouped preclinical
-    biomarker screening across CellLine, PDC, PDO, and PDX datasets. The
-    package reuses DROMA.Set and DROMA.R data access and clinical validation
-    helpers, and adds stage-wise utilities for coverage filtering, grouped
-    Spearman screening, workflow meta formatting, TCGA translation filtering,
-    and workflow result assembly.
-License: MPL-2 + file LICENSE
+Authors@R: person("Codex", "Agent", email = "codex@example.com", role = c("aut", "cre"))
+Description: Minimal helper functions for the Meta_project2 biomarker workflow.
+License: MIT
 Encoding: UTF-8
 LazyData: true
-Depends:
-    R (>= 4.1.0),
-    DROMA.Set,
-    DROMA.R
 Imports:
-    data.table,
-    meta,
-    effsize,
-    stats,
-    utils,
-    methods,
-    tools
+    data.table
 Suggests:
     testthat

@@ -24,9 +24,5 @@ resolve_workflow_script_dir <- function() {
       return(normalizePath(d, mustWork = TRUE))
     }
   }
-  stop(
-    "Could not find 00-Workflow_Common.R. setwd() to .../Meta_project or .../Meta_project/workflow, ",
-    "or run with Rscript --file=path/to/script.R",
-    call. = FALSE
-  )
+  stop("Could not find 00-Workflow_Common.R", call. = FALSE)
 }
