@@ -7,8 +7,11 @@ Authors@R:
 Description: DROMA.Meta wraps a four-step biomarker discovery workflow across
     preclinical, TCGA concordance, and clinical validation stages. It provides
     helpers for valid drug and tumor-type filtering, TCGA Anderson-Darling
-    concordance checks, and batch execution over drug and tumor-type grids.
+    concordance checks, and script-driven execution over drug and tumor-type
+    combinations as an application package built on DROMA.R.
 License: MPL-2.0 + file LICENSE
+URL: https://github.com/mugpeng/DROMA_Meta
+BugReports: https://github.com/mugpeng/DROMA_Meta/issues
 Depends:
     R (>= 4.0.0)
 Imports:
