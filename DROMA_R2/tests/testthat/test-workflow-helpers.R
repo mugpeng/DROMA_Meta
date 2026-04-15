@@ -77,3 +77,85 @@ test_that("mapTumorTypeToTcgaCode maps common tumor names", {
   expect_equal(mapTumorTypeToTcgaCode("lung cancer"), "TCGA-LUAD")
   expect_null(mapTumorTypeToTcgaCode("unknown tumor"))
 })
+
+test_that("runTcgaTranslationFilter supports test_top_n and validates show_progress", {
+  candidates <- data.frame(
+    drug = c("D1", "D2", "D3"),
+    tumor_type = c("breast cancer", "breast cancer", "breast cancer"),
+    name = c("G1", "G2", "G3"),
+    stringsAsFactors = FALSE
+  )
+
+  testthat::local_mocked_bindings(
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") c(1, 2, 3, 4),
+    .ad_two_sample_p = function(x, y) 0.01,
+    .env = asNamespace("DROMA.R2")
+  )
+
+  expect_error(
+    runTcgaTranslationFilter(
+      preclinical_candidates = candidates,
+      cellline_set = NULL,
+      pdcpdx_set = NULL,
+      tcga_dir = tempdir(),
+      show_progress = "yes"
+    ),
+    "show_progress must be TRUE or FALSE"
+  )
+
+  out <- runTcgaTranslationFilter(
+    preclinical_candidates = candidates,
+    cellline_set = NULL,
+    pdcpdx_set = NULL,
+    tcga_dir = tempdir(),
+    cores = 1L,
+    show_progress = FALSE,
+    test_top_n = 2L
+  )
+
+  expect_equal(nrow(out), 2L)
+  expect_equal(out$name, c("G1", "G2"))
+})
+
+test_that("runTcgaTranslationFilter keeps results consistent in parallel mode", {
+  skip_if_not_installed("future")
+  skip_if_not_installed("furrr")
+
+  candidates <- data.frame(
+    drug = c("D1", "D2", "D3", "D4"),
+    tumor_type = rep("breast cancer", 4),
+    name = c("G1", "G2", "G3", "G4"),
+    stringsAsFactors = FALSE
+  )
+
+  testthat::local_mocked_bindings(
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") {
+      idx <- match(gene, candidates$name)
+      c(idx, idx + 1, idx + 2, idx + 3)
+    },
+    .ad_two_sample_p = function(x, y) sum(x, na.rm = TRUE) / 100,
+    .env = asNamespace("DROMA.R2")
+  )
+
+  serial <- runTcgaTranslationFilter(
+    preclinical_candidates = candidates,
+    cellline_set = NULL,
+    pdcpdx_set = NULL,
+    tcga_dir = tempdir(),
+    cores = 1L,
+    show_progress = FALSE
+  )
+
+  parallel <- runTcgaTranslationFilter(
+    preclinical_candidates = candidates,
+    cellline_set = NULL,
+    pdcpdx_set = NULL,
+    tcga_dir = tempdir(),
+    cores = 2L,
+    show_progress = FALSE
+  )
+
+  expect_equal(parallel[, names(serial), with = FALSE], serial)
+})

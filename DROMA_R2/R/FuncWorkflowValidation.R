@@ -116,37 +116,205 @@ loadTcgaExpressionVector <- local({
   values
 }
 
+.createTranslationProgressCallback <- function(show_progress = TRUE, update_interval = 10) {
+  if (!isTRUE(show_progress)) {
+    return(function(done, total, elapsed) invisible(NULL))
+  }
+
+  last_update_time <- 0
+
+  function(done, total, elapsed) {
+    if ((elapsed - last_update_time) < update_interval && done < total) {
+      return(invisible(NULL))
+    }
+
+    last_update_time <<- elapsed
+    progress_pct <- (done / total) * 100
+
+    if (done < total) {
+      message(sprintf(
+        "TCGA translation filter: %d/%d (%.1f%%) | Elapsed: %.1fs",
+        done, total, progress_pct, elapsed
+      ))
+    } else {
+      message(sprintf(
+        "TCGA translation filter: %d/%d (100%%) | Total time: %.1fs",
+        done, total, elapsed
+      ))
+    }
+
+    invisible(NULL)
+  }
+}
+
+.runTcgaTranslationOne <- function(row, cellline_set, pdcpdx_set, tcga_dir, feature_type = "mRNA") {
+  tcga_values <- loadTcgaExpressionVector(tcga_dir, row$tumor_type[[1]], row$name[[1]])
+  cellline_values <- .collectGroupExpression(cellline_set, row$tumor_type[[1]], row$name[[1]], feature_type)
+  pdcpdx_values <- .collectGroupExpression(pdcpdx_set, row$tumor_type[[1]], row$name[[1]], feature_type)
+
+  cellline_scaled <- if (length(cellline_values) >= 3) as.numeric(scale(cellline_values)) else numeric()
+  pdcpdx_scaled <- if (length(pdcpdx_values) >= 3) as.numeric(scale(pdcpdx_values)) else numeric()
+  tcga_scaled <- if (!is.null(tcga_values) && length(tcga_values) >= 3) as.numeric(scale(tcga_values)) else numeric()
+
+  data.table::data.table(
+    drug = row$drug[[1]],
+    tumor_type = row$tumor_type[[1]],
+    name = row$name[[1]],
+    tcga_ad_cellline_p = if (length(tcga_scaled) >= 3 && length(cellline_scaled) >= 3) {
+      .ad_two_sample_p(cellline_scaled, tcga_scaled)
+    } else {
+      NA_real_
+    },
+    tcga_ad_pdcpdx_p = if (length(tcga_scaled) >= 3 && length(pdcpdx_scaled) >= 3) {
+      .ad_two_sample_p(pdcpdx_scaled, tcga_scaled)
+    } else {
+      NA_real_
+    }
+  )
+}
+
 runTcgaTranslationFilter <- function(preclinical_candidates,
                                      cellline_set,
                                      pdcpdx_set,
                                      tcga_dir,
                                      feature_type = "mRNA",
                                      fdr_t = 0.01,
-                                     cores = 1L) {
+                                     cores = 1L,
+                                     show_progress = TRUE,
+                                     test_top_n = NULL) {
   candidates <- data.table::as.data.table(preclinical_candidates)
   if (nrow(candidates) == 0) {
     return(candidates)
   }
 
-  rows <- .runParallelRows(seq_len(nrow(candidates)), function(i) {
-    row <- candidates[i]
-    tcga_values <- loadTcgaExpressionVector(tcga_dir, row$tumor_type[[1]], row$name[[1]])
-    cellline_values <- .collectGroupExpression(cellline_set, row$tumor_type[[1]], row$name[[1]], feature_type)
-    pdcpdx_values <- .collectGroupExpression(pdcpdx_set, row$tumor_type[[1]], row$name[[1]], feature_type)
+  if (!is.logical(show_progress) || length(show_progress) != 1) {
+    stop("show_progress must be TRUE or FALSE")
+  }
 
-    data.table::data.table(
-      drug = row$drug[[1]],
-      tumor_type = row$tumor_type[[1]],
-      name = row$name[[1]],
-      tcga_ad_cellline_p = if (!is.null(tcga_values)) .ad_two_sample_p(scale(cellline_values), scale(tcga_values)) else NA_real_,
-      tcga_ad_pdcpdx_p = if (!is.null(tcga_values)) .ad_two_sample_p(scale(pdcpdx_values), scale(tcga_values)) else NA_real_
+  if (!is.null(test_top_n)) {
+    if (!is.numeric(test_top_n) || length(test_top_n) != 1 || test_top_n < 1 || test_top_n != as.integer(test_top_n)) {
+      stop("test_top_n must be a positive integer or NULL")
+    }
+    if (nrow(candidates) > test_top_n) {
+      candidates <- candidates[seq_len(test_top_n)]
+    }
+  }
+
+  max_cores <- if (requireNamespace("parallel", quietly = TRUE)) {
+    detected_cores <- tryCatch(parallel::detectCores(), error = function(e) NA_integer_)
+    if (is.na(detected_cores) || detected_cores < 2L) 1L else detected_cores - 1L
+  } else {
+    1L
+  }
+  if (!is.numeric(cores) || length(cores) != 1 || cores < 1 || cores != as.integer(cores) || cores > max_cores) {
+    stop(sprintf("cores must be a positive integer between 1 and %d", max_cores))
+  }
+  cores <- as.integer(cores)
+
+  start_time <- Sys.time()
+  progress_callback <- if (cores == 1L) {
+    .createTranslationProgressCallback(show_progress = show_progress, update_interval = 10)
+  } else {
+    NULL
+  }
+
+  worker_function <- function(i) {
+    result <- .runTcgaTranslationOne(
+      row = candidates[i],
+      cellline_set = cellline_set,
+      pdcpdx_set = pdcpdx_set,
+      tcga_dir = tcga_dir,
+      feature_type = feature_type
     )
-  }, cores = cores)
+    if (!is.null(progress_callback)) {
+      progress_callback(
+        i,
+        nrow(candidates),
+        as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+      )
+    }
+    result
+  }
+
+  if (show_progress) {
+    message(sprintf("Running TCGA translation filter on %d candidate(s)...", nrow(candidates)))
+  }
+
+  if (cores > 1L && requireNamespace("future", quietly = TRUE) && requireNamespace("furrr", quietly = TRUE)) {
+    old_size <- getOption("future.globals.maxSize")
+    options(future.globals.maxSize = 2 * 1024^3)
+
+    if (.Platform$OS.type == "unix") {
+      future::plan(future::multicore, workers = cores)
+    } else {
+      future::plan(future::multisession, workers = cores)
+    }
+    on.exit({
+      future::plan(future::sequential)
+      options(future.globals.maxSize = old_size)
+    }, add = TRUE)
+
+    n_candidates <- nrow(candidates)
+    chunk_size <- if (n_candidates < 100L) {
+      max(5L, ceiling(n_candidates / cores))
+    } else if (n_candidates < 1000L) {
+      ceiling(n_candidates / (cores * 4L))
+    } else {
+      max(25L, min(100L, ceiling(n_candidates / (cores * 8L))))
+    }
+    indices <- seq_len(n_candidates)
+    chunks <- split(indices, ceiling(indices / chunk_size))
+
+    if (show_progress && requireNamespace("progressr", quietly = TRUE)) {
+      rows <- progressr::with_progress({
+        p <- progressr::progressor(steps = n_candidates)
+        chunk_results <- furrr::future_map(chunks, function(chunk_indices) {
+          lapply(chunk_indices, function(i) {
+            result <- .runTcgaTranslationOne(
+              row = candidates[i],
+              cellline_set = cellline_set,
+              pdcpdx_set = pdcpdx_set,
+              tcga_dir = tcga_dir,
+              feature_type = feature_type
+            )
+            p()
+            result
+          })
+        }, .options = furrr::furrr_options(seed = TRUE))
+        unlist(chunk_results, recursive = FALSE)
+      })
+    } else {
+      if (show_progress && !requireNamespace("progressr", quietly = TRUE)) {
+        message("Note: Install 'progressr' for parallel progress tracking: install.packages('progressr')")
+      }
+      chunk_results <- furrr::future_map(chunks, function(chunk_indices) {
+        lapply(chunk_indices, function(i) {
+          .runTcgaTranslationOne(
+            row = candidates[i],
+            cellline_set = cellline_set,
+            pdcpdx_set = pdcpdx_set,
+            tcga_dir = tcga_dir,
+            feature_type = feature_type
+          )
+        })
+      }, .options = furrr::furrr_options(seed = TRUE))
+      rows <- unlist(chunk_results, recursive = FALSE)
+    }
+  } else {
+    if (cores > 1L && show_progress) {
+      message("Note: Install 'future' and 'furrr' to enable parallel TCGA translation filtering. Falling back to serial mode.")
+    }
+    rows <- lapply(seq_len(nrow(candidates)), worker_function)
+  }
 
   tcga_dt <- data.table::rbindlist(rows, fill = TRUE)
   tcga_dt[, tcga_ad_cellline_fdr := stats::p.adjust(tcga_ad_cellline_p, method = "BH")]
   tcga_dt[, tcga_ad_pdcpdx_fdr := stats::p.adjust(tcga_ad_pdcpdx_p, method = "BH")]
   tcga_dt[, tcga_supported := (tcga_ad_cellline_fdr < fdr_t) | (tcga_ad_pdcpdx_fdr < fdr_t)]
+  if (show_progress) {
+    elapsed <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+    message(sprintf("TCGA translation filter completed in %.1fs", elapsed))
+  }
   tcga_dt[]
 }
 

@@ -1,16 +1,15 @@
 # Run with getwd() == project root (parent of workflow/ and DROMA_R2/).
-# Override main DROMA SQLite: set absolute path, or "" for <repo_root>/Data/droma.sqlite.
+# Override main DROMA SQLite: set absolute path, or "" for ../Data/droma.sqlite (relative to project root).
 droma_sqlite_path <- ""
 # droma_sqlite_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
 
-# Override CTRDB SQLite: set absolute path, or "" for <repo_root>/Data/ctrdb.sqlite.
+# Override CTRDB SQLite: set absolute path, or "" for ../Data/ctrdb.sqlite.
 ctrdb_sqlite_path <- ""
 # ctrdb_sqlite_path <- "/home/data/denglab/bigData/DROMA/ctrdb.sqlite"
 
-# TCGA RNA counts directory (used by TCGA translation step): absolute path, or "" for
-# <repo_root>/Data/TCGA/rna_counts
-tcga_rna_counts_dir <- ""
-# tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/TCGA/rna_counts"
+# TCGA RNA counts directory: absolute path, or "" for ../Data/TCGA/rna_counts.
+tcga_rna_counts_dir <- "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/"
+# tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
 
 workflow_root <- file.path(".", "workflow")
 meta_project_root <- normalizePath(".", mustWork = TRUE)
@@ -33,17 +32,17 @@ workflow_config <- buildWorkflowConfig(
   db_path = if (nzchar(droma_sqlite_path)) {
     droma_sqlite_path
   } else {
-    file.path(repo_root, "Data", "droma.sqlite")
+    file.path(repo_root, "..", "Data", "droma.sqlite")
   },
   ctrdb_path = if (nzchar(ctrdb_sqlite_path)) {
     ctrdb_sqlite_path
   } else {
-    file.path(repo_root, "Data", "ctrdb.sqlite")
+    file.path(repo_root, "..", "Data", "ctrdb.sqlite")
   },
   tcga_dir = if (nzchar(tcga_rna_counts_dir)) {
     tcga_rna_counts_dir
   } else {
-    file.path(repo_root, "Data", "TCGA", "rna_counts")
+    file.path(repo_root, "..", "Data", "TCGA", "rna_counts")
   },
   output_base = file.path(workflow_root, "Output"),
   drug_names = "Paclitaxel",
@@ -69,35 +68,40 @@ read_stage <- function(subdir, filename) {
   readRDS(file.path(workflow_config$output_base, subdir, filename))
 }
 
-cat("\n=== 00: Project grouping ===\n")
-con <- DROMA.Set::connectDROMADatabase(workflow_config$db_path)
-on.exit(DROMA.Set::closeDROMADatabase(con), add = TRUE)
-dir.create(file.path(workflow_config$output_base, "01-projects"), recursive = TRUE, showWarnings = FALSE)
+# One `{ ... }` block so `on.exit` is tied to a single eval frame under `source()`:
+# otherwise each top-level line is a separate `eval()`, and `on.exit` runs as soon
+# as the `on.exit(...)` line finishes, closing `con` before `listDROMAProjects`.
+{
+  cat("\n=== 00: Project grouping ===\n")
+  con <- DROMA.Set::connectDROMADatabase(workflow_config$db_path)
+  on.exit(DROMA.Set::closeDROMADatabase(con), add = TRUE)
+  dir.create(file.path(workflow_config$output_base, "01-projects"), recursive = TRUE, showWarnings = FALSE)
 
-project_anno <- data.table::as.data.table(DROMA.Set::listDROMAProjects(connection = con))
-project_groups <- createWorkflowProjectGroups(project_anno)
-group_sets <- lapply(project_groups, function(project_names) {
-  DROMA.Set::createMultiDromaSetFromAllProjects(
-    db_path = workflow_config$db_path,
-    include_projects = sort(unique(project_names)),
-    con = con
-  )
-})
-shared_features <- getSharedGroupFeatures(group_sets, workflow_config$feature_type)
+  project_anno <- listDROMAProjects(connection = con)
+  project_groups <- createWorkflowProjectGroups(project_anno)
+  group_sets <- lapply(project_groups, function(project_names) {
+    DROMA.Set::createMultiDromaSetFromAllProjects(
+      db_path = workflow_config$db_path,
+      include_projects = sort(unique(project_names)),
+      con = con
+    )
+  })
+  shared_features <- getSharedGroupFeatures(group_sets, workflow_config$feature_type)
 
-save_stage(project_anno, "01-projects", "project_anno.rds")
-save_stage(project_groups, "01-projects", "project_groups.rds")
-save_stage(group_sets, "01-projects", "group_sets.rds")
-save_stage(shared_features, "01-projects", "shared_features.rds")
+  save_stage(project_anno, "01-projects", "project_anno.rds")
+  save_stage(project_groups, "01-projects", "project_groups.rds")
+  save_stage(group_sets, "01-projects", "group_sets.rds")
+  save_stage(shared_features, "01-projects", "shared_features.rds")
 
-fwrite(project_anno, file.path(workflow_config$output_base, "01-projects", "project_anno.csv"))
-for (group_name in names(project_groups)) {
+  fwrite(project_anno, file.path(workflow_config$output_base, "01-projects", "project_anno.csv"))
+  for (group_name in names(project_groups)) {
+    fwrite(
+      data.table(group = group_name, project_name = project_groups[[group_name]]),
+      file.path(workflow_config$output_base, "01-projects", paste0(group_name, "_projects.csv"))
+    )
+  }
   fwrite(
-    data.table(group = group_name, project_name = project_groups[[group_name]]),
-    file.path(workflow_config$output_base, "01-projects", paste0(group_name, "_projects.csv"))
+    data.table(feature = shared_features),
+    file.path(workflow_config$output_base, "01-projects", "shared_features.csv")
   )
 }
-fwrite(
-  data.table(feature = shared_features),
-  file.path(workflow_config$output_base, "01-projects", "shared_features.csv")
-)
