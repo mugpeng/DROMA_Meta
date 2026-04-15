@@ -157,6 +157,33 @@
   if (file.exists(path)) readRDS(path) else .empty_meta_df()
 }
 
+.eligible_values_by_project_count <- function(project_anno,
+                                              anno_df,
+                                              dataset_types,
+                                              value_col,
+                                              min_project_count,
+                                              exclude_values = NULL) {
+  group_projects <- unique(as.character(
+    project_anno[project_anno$dataset_type %in% dataset_types, "project_name"]
+  ))
+  group_projects <- group_projects[!is.na(group_projects) & nzchar(group_projects)]
+
+  values <- sort(unique(as.character(anno_df[[value_col]])))
+  values <- values[!is.na(values) & nzchar(values)]
+  if (!is.null(exclude_values)) {
+    values <- setdiff(values, exclude_values)
+  }
+
+  keep_values <- values[vapply(values, function(v) {
+    value_projects <- unique(as.character(
+      anno_df$ProjectID[!is.na(anno_df[[value_col]]) & anno_df[[value_col]] == v]
+    ))
+    length(intersect(group_projects, value_projects)) >= min_project_count
+  }, logical(1))]
+
+  keep_values
+}
+
 .filter_projects_for_drug_tumor <- function(project_names,
                                             project_anno,
                                             drug_anno,
@@ -200,6 +227,49 @@
   keep_projects
 }
 
+.get_valid_drugs_and_tumor_types <- function(project_anno,
+                                             drug_anno,
+                                             sample_anno,
+                                             cell_n_datasets_t,
+                                             pdcpdx_n_datasets_t) {
+  valid_cell_drugs <- .eligible_values_by_project_count(
+    project_anno = project_anno,
+    anno_df = drug_anno,
+    dataset_types = c("CellLine", "PDC"),
+    value_col = "DrugName",
+    min_project_count = cell_n_datasets_t
+  )
+  valid_pdcpdx_drugs <- .eligible_values_by_project_count(
+    project_anno = project_anno,
+    anno_df = drug_anno,
+    dataset_types = c("PDO", "PDX"),
+    value_col = "DrugName",
+    min_project_count = pdcpdx_n_datasets_t
+  )
+
+  valid_cell_tumor_types <- .eligible_values_by_project_count(
+    project_anno = project_anno,
+    anno_df = sample_anno,
+    dataset_types = c("CellLine", "PDC"),
+    value_col = "TumorType",
+    min_project_count = cell_n_datasets_t,
+    exclude_values = "non-cancer"
+  )
+  valid_pdcpdx_tumor_types <- .eligible_values_by_project_count(
+    project_anno = project_anno,
+    anno_df = sample_anno,
+    dataset_types = c("PDO", "PDX"),
+    value_col = "TumorType",
+    min_project_count = pdcpdx_n_datasets_t,
+    exclude_values = "non-cancer"
+  )
+
+  list(
+    valid_drugs = intersect(valid_cell_drugs, valid_pdcpdx_drugs),
+    valid_tumor_types = intersect(valid_cell_tumor_types, valid_pdcpdx_tumor_types)
+  )
+}
+
 .run_batch_preclinical <- function(config) {
   .load_biomarker_runtime(config$repo_root)
   dir.create(config$output_dir, recursive = TRUE, showWarnings = FALSE)
@@ -211,20 +281,21 @@
   drug_anno <- DROMA.Set::getDROMAAnnotation("drug")
   sample_anno <- DROMA.Set::getDROMAAnnotation("sample")
 
-  valid_drugs <- sort(unique(as.character(drug_anno$DrugName)))
-  valid_drugs <- valid_drugs[!is.na(valid_drugs) & nzchar(valid_drugs)]
-  valid_tumor_types <- sort(unique(as.character(sample_anno$TumorType)))
-  valid_tumor_types <- valid_tumor_types[
-    !is.na(valid_tumor_types) &
-      nzchar(valid_tumor_types) &
-      valid_tumor_types != "non-cancer"
-  ]
+  valid_inputs <- .get_valid_drugs_and_tumor_types(
+    project_anno = project_anno,
+    drug_anno = drug_anno,
+    sample_anno = sample_anno,
+    cell_n_datasets_t = config$cell_n_datasets_t,
+    pdcpdx_n_datasets_t = config$pdcpdx_n_datasets_t
+  )
+  valid_drugs <- valid_inputs$valid_drugs
+  valid_tumor_types <- valid_inputs$valid_tumor_types
 
   if (!config$drug %in% valid_drugs) {
-    stop("drug not found in drug_anno: ", config$drug, call. = FALSE)
+    stop("drug does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", config$drug, call. = FALSE)
   }
   if (!config$tumor_type %in% valid_tumor_types) {
-    stop("tumor_type not found in sample_anno or excluded as non-cancer: ", config$tumor_type, call. = FALSE)
+    stop("tumor_type does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", config$tumor_type, call. = FALSE)
   }
 
   cell_names <- .filter_projects_for_drug_tumor(
@@ -295,10 +366,8 @@
   saveRDS(batch_cell, config$batch_cell_rds)
   saveRDS(batch_pdcpdx, config$batch_pdcpdx_rds)
 
-  writeLines(valid_drugs, file.path(config$output_base, "valid_drugs.txt"))
   writeLines(cell_names, file.path(config$output_dir, "cell_sets_projects.txt"))
   writeLines(pdcpdx_names, file.path(config$output_dir, "pdcpdx_sets_projects.txt"))
-  writeLines(valid_tumor_types, file.path(config$output_base, "valid_tumor_types.txt"))
 
   list(
     batch_cell = batch_cell,

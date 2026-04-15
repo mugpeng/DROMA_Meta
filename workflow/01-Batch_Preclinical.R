@@ -7,8 +7,6 @@ library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
 
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/run_drug_tumor_biomarker_workflow.R", local = FALSE)
-
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
@@ -34,20 +32,21 @@ project_anno <- DROMA.Set::listDROMAProjects()
 drug_anno <- getDROMAAnnotation("drug")
 sample_anno <- getDROMAAnnotation("sample")
 
-valid_drugs <- sort(unique(as.character(drug_anno$DrugName)))
-valid_drugs <- valid_drugs[!is.na(valid_drugs) & nzchar(valid_drugs)]
-valid_tumor_types <- sort(unique(as.character(sample_anno$TumorType)))
-valid_tumor_types <- valid_tumor_types[
-  !is.na(valid_tumor_types) &
-    nzchar(valid_tumor_types) &
-    valid_tumor_types != "non-cancer"
-]
+valid_inputs <- .get_valid_drugs_and_tumor_types(
+  project_anno = project_anno,
+  drug_anno = drug_anno,
+  sample_anno = sample_anno,
+  cell_n_datasets_t = 3,
+  pdcpdx_n_datasets_t = 2
+)
+valid_drugs <- valid_inputs$valid_drugs
+valid_tumor_types <- valid_inputs$valid_tumor_types
 
 if (!drug %in% valid_drugs) {
-  stop("drug not found in drug_anno: ", drug, call. = FALSE)
+  stop("drug does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", drug, call. = FALSE)
 }
 if (!tumor_type %in% valid_tumor_types) {
-  stop("tumor_type not found in sample_anno or excluded as non-cancer: ", tumor_type, call. = FALSE)
+  stop("tumor_type does not satisfy both cell_sets and pdcpdx_sets project-count requirements: ", tumor_type, call. = FALSE)
 }
 
 cell_names_all <- project_anno[project_anno$dataset_type %in% c("CellLine", "PDC"), ]$project_name
@@ -96,8 +95,6 @@ pdcpdx_sets <- createMultiDromaSetFromAllProjects(
   con = con
 )
 
-writeLines(valid_tumor_types, file.path(output_base, "valid_tumor_types.txt"))
-writeLines(valid_drugs, file.path(output_base, "valid_drugs.txt"))
 writeLines(cell_names, file.path(output_dir, "cell_sets_projects.txt"))
 writeLines(pdcpdx_names, file.path(output_dir, "pdcpdx_sets_projects.txt"))
 

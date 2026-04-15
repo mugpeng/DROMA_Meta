@@ -65,7 +65,10 @@ if (nrow(selected_genes) > 0 && nrow(clinical_sig) > 0) {
   if (nrow(final_biomarkers) > 0) {
     final_biomarkers$drug <- drug
     final_biomarkers$tumor_type <- tumor_type
-    final_biomarkers$cell_supported <- final_biomarkers$name %in% mRNA_cell_sig$name
+    final_biomarkers$direction <- coalesce(final_biomarkers$direction_ctrdb, final_biomarkers$direction_pdcpdx_preclinical, final_biomarkers$direction_cell_preclinical)
+    final_biomarkers$direction_ctrdb <- NULL
+    final_biomarkers$direction_pdcpdx_preclinical <- NULL
+    final_biomarkers$direction_cell_preclinical <- NULL
   }
 } else {
   final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)

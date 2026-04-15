@@ -10,6 +10,7 @@ root_dir <- normalizePath(file.path(script_dir, ".."), mustWork = TRUE)
 
 required_files <- c(
   file.path(root_dir, "R", "run_drug_tumor_biomarker_workflow.R"),
+  file.path(root_dir, "workflow", "00-Eligible_Drug_Tumor.R"),
   file.path(root_dir, "workflow", "01-Batch_Preclinical.R"),
   file.path(root_dir, "workflow", "02-Select_Preclinical.R"),
   file.path(root_dir, "workflow", "03-Clinical_Validation.R")
