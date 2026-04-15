@@ -6,13 +6,12 @@
 library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
-
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/run_drug_tumor_biomarker_workflow.R", local = FALSE)
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
 
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
 output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
-tumor_type_slug <- .sanitize_name(tumor_type)
+tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 

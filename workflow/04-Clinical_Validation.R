@@ -6,6 +6,7 @@
 library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
 
 ctrdb_path <- "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
 drug <- "Paclitaxel"
@@ -18,7 +19,7 @@ clinical_P_t <- 0.1
 clinical_n_datasets_t <- NULL
 
 output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
-tumor_type_slug <- .sanitize_name(tumor_type)
+tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -39,7 +40,7 @@ clinical_batch <- tryCatch(
   ),
   error = function(e) {
     warning("Clinical validation returned no usable result: ", e$message, call. = FALSE)
-    .empty_meta_df()
+    createEmptyMetaDf()
   }
 )
 

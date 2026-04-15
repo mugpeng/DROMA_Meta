@@ -3,7 +3,8 @@
 # Export valid drugs and tumor types that satisfy project-count thresholds
 # ============================================================================
 
-source("R/run_drug_tumor_biomarker_workflow.R")
+source("R/FuncHelper.R")
+source("R/FuncValidCheck.R")
 
 library(data.table)
 library(DROMA.Set)
@@ -24,7 +25,7 @@ project_anno <- DROMA.Set::listDROMAProjects()
 drug_anno <- getDROMAAnnotation("drug")
 sample_anno <- getDROMAAnnotation("sample")
 
-valid_inputs <- .get_valid_drugs_and_tumor_types(
+valid_inputs <- getValidDrugsAndTumorTypes(
   project_anno = project_anno,
   drug_anno = drug_anno,
   sample_anno = sample_anno,

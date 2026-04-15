@@ -6,6 +6,8 @@
 library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncValidCheck.R", local = FALSE)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
 drug <- "Paclitaxel"
@@ -18,7 +20,7 @@ cell_min_intersected_cells <- 20
 pdcpdx_min_intersected_cells <- 8
 
 output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
-tumor_type_slug <- .sanitize_name(tumor_type)
+tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -32,7 +34,7 @@ project_anno <- DROMA.Set::listDROMAProjects()
 drug_anno <- getDROMAAnnotation("drug")
 sample_anno <- getDROMAAnnotation("sample")
 
-valid_inputs <- .get_valid_drugs_and_tumor_types(
+valid_inputs <- getValidDrugsAndTumorTypes(
   project_anno = project_anno,
   drug_anno = drug_anno,
   sample_anno = sample_anno,

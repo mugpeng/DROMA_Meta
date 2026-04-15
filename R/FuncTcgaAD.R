@@ -1,5 +1,8 @@
 # TCGA Anderson-Darling concordance helpers ----
 
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
+source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncValidCheck.R", local = FALSE)
+
 getTcgaTumorTypeMapping <- function() {
   c(
     "haematopoietic/lymphoid cancer" = "TCGA-LAML",
@@ -236,7 +239,7 @@ filterADConcordantFeatures <- function(ad_stats) {
     return(ad_stats)
   }
 
-  ad_stats[isTRUE(ad_concordant)]
+  ad_stats[ad_concordant %in% TRUE]
 }
 
 batchFindTcgaADConcordantFeatures <- function(selected_features,
@@ -250,10 +253,7 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
                                               p_t = 0.05) {
   selected_dt <- data.table::as.data.table(selected_features)
   if (!nrow(selected_dt)) {
-    return(list(
-      ad_stats = data.table::as.data.table(selected_dt),
-      ad_filtered = data.table::as.data.table(selected_dt)
-    ))
+    return(data.table::as.data.table(selected_dt))
   }
 
   tcga_tumor_type <- getMatchedTcgaTumorType(tumor_type)
@@ -338,10 +338,5 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
   })
 
   ad_stats <- data.table::rbindlist(ad_rows, fill = TRUE)
-  ad_filtered <- filterADConcordantFeatures(ad_stats)
-
-  list(
-    ad_stats = ad_stats,
-    ad_filtered = ad_filtered
-  )
+  ad_stats
 }
