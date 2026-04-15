@@ -34,6 +34,30 @@ test_that("loadTcgaExpressionVector resolves rna_counts subdirectory", {
   expect_true(all(vals > 0))
 })
 
+test_that("loadTcgaExpressionVector can use csv probe maps", {
+  td <- tempfile("tcga-map-")
+  dir.create(td, showWarnings = FALSE)
+  dir.create(file.path(td, "rna_counts"), showWarnings = FALSE)
+
+  tcga_file <- file.path(td, "rna_counts", "TCGA-BRCA.htseq_counts.tsv.gz")
+  con <- gzfile(tcga_file, open = "wt")
+  writeLines(c(
+    "gene_id\tS1\tS2\tS3",
+    "ENSG00000117114.18\t1\t3\t7"
+  ), con = con)
+  close(con)
+
+  map_file <- file.path(td, "gencode.human.v49.annotation.gene.probeMap")
+  writeLines(c(
+    "id,gene",
+    "ENSG00000117114.22,ADGRL2"
+  ), con = map_file)
+
+  vals <- loadTcgaExpressionVector(td, "breast cancer", "ADGRL2", gene_probe_map = map_file)
+  expect_equal(length(vals), 3L)
+  expect_true(all(vals > 0))
+})
+
 test_that("runTcgaTranslationFilter supports test_top_n and validates show_progress", {
   candidates <- data.frame(
     drug = c("D1", "D2", "D3"),
@@ -43,7 +67,7 @@ test_that("runTcgaTranslationFilter supports test_top_n and validates show_progr
   )
 
   testthat::local_mocked_bindings(
-    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) c(1, 2, 3, 4),
     .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") c(1, 2, 3, 4),
     .ad_two_sample_test = function(x, y) list(p_value = 0.01, method = "mock-ad"),
     .env = asNamespace("DROMA.R2")
@@ -87,7 +111,7 @@ test_that("runTcgaTranslationFilter keeps results consistent in parallel mode", 
   )
 
   testthat::local_mocked_bindings(
-    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) c(1, 2, 3, 4),
     .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") {
       idx <- match(gene, candidates$name)
       c(idx, idx + 1, idx + 2, idx + 3)
@@ -126,7 +150,7 @@ test_that("runTcgaTranslationFilter treats non-significant distribution differen
   )
 
   testthat::local_mocked_bindings(
-    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) c(1, 2, 3, 4),
     .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") {
       if (identical(gene, "G_same")) c(1, 2, 3, 4) else c(10, 11, 12, 13)
     },
@@ -149,8 +173,8 @@ test_that("runTcgaTranslationFilter treats non-significant distribution differen
     fdr_t = 0.05
   )
 
-  expect_true(out[name == "G_same", tcga_supported][[1]])
-  expect_false(out[name == "G_diff", tcga_supported][[1]])
+  expect_true(subset(out, name == "G_same")$tcga_supported)
+  expect_false(subset(out, name == "G_diff")$tcga_supported)
 })
 
 test_that("runTcgaTranslationFilter compares translation on unscaled expression values", {
@@ -163,7 +187,7 @@ test_that("runTcgaTranslationFilter compares translation on unscaled expression 
 
   captured_inputs <- list()
   testthat::local_mocked_bindings(
-    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene) c(1, 2, 3, 4),
+    loadTcgaExpressionVector = function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) c(1, 2, 3, 4),
     .collectGroupExpression = function(group_set, tumor_type, gene, feature_type = "mRNA") c(10, 11, 12, 13),
     .ad_two_sample_test = function(x, y) {
       captured_inputs[[length(captured_inputs) + 1L]] <<- list(x = x, y = y)

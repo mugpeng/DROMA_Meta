@@ -14,7 +14,8 @@ tcga_results <- runTcgaTranslationFilter(
   tcga_dir = workflow_config$tcga_dir,
   feature_type = workflow_config$feature_type,
   fdr_t = workflow_config$tcga_fdr_t,
-  cores = .get_safe_cores(workflow_config$requested_cores)
+  cores = .get_safe_cores(workflow_config$requested_cores),
+  gene_probe_map = workflow_config$gene_probe_map
 )
 
 save_stage(tcga_results, "04-tcga-filter", "tcga_results.rds")

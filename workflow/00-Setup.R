@@ -11,6 +11,10 @@ ctrdb_sqlite_path <- ""
 tcga_rna_counts_dir <- "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/"
 # tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
 
+# Gene symbol -> Ensembl id map for TCGA row lookup (TSV: id, gene, ...). "" -> ../Data/gencode.v22.annotation.gene.probeMap
+gene_probe_map_path <- ""
+# gene_probe_map_path <- "/Users/peng/Desktop/Project/DROMA/Data/gencode.v22.annotation.gene.probeMap"
+
 workflow_root <- file.path(".", "workflow")
 meta_project_root <- normalizePath(".", mustWork = TRUE)
 repo_root <- meta_project_root

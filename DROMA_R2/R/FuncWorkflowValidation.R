@@ -27,10 +27,21 @@ mapTumorTypeToTcgaCode <- function(tumor_type) {
 
 loadTcgaExpressionVector <- local({
   tcga_cache <- new.env(parent = emptyenv())
-  gene_map_cache <- NULL
+  gene_map_cache <- new.env(parent = emptyenv())
   counts_file_cache <- new.env(parent = emptyenv())
+  read_gene_map <- function(map_path) {
+    header_line <- tryCatch(readLines(map_path, n = 1L, warn = FALSE), error = function(e) "")
+    if (!length(header_line)) {
+      return(data.frame())
+    }
+    if (grepl(",", header_line[[1]], fixed = TRUE)) {
+      utils::read.csv(map_path, stringsAsFactors = FALSE)
+    } else {
+      utils::read.delim(map_path, stringsAsFactors = FALSE)
+    }
+  }
 
-  function(tcga_dir, tumor_type, gene) {
+  function(tcga_dir, tumor_type, gene, gene_probe_map = NULL) {
     tcga_code <- mapTumorTypeToTcgaCode(tumor_type)
     if (is.null(tcga_code)) {
       return(NULL)
@@ -59,29 +70,52 @@ loadTcgaExpressionVector <- local({
       return(NULL)
     }
 
-    if (!exists(tcga_code, envir = tcga_cache, inherits = FALSE)) {
+    tcga_data_key <- paste(dir_key, tcga_code, sep = "::")
+    if (!exists(tcga_data_key, envir = tcga_cache, inherits = FALSE)) {
       tcga_dt <- utils::read.delim(gzfile(tcga_file), check.names = FALSE, stringsAsFactors = FALSE)
       gene_col <- colnames(tcga_dt)[1]
       clean_ids <- sub("\\.[0-9]+$", "", tcga_dt[[gene_col]])
       gene_index <- stats::setNames(seq_len(nrow(tcga_dt)), clean_ids)
-      assign(tcga_code, list(data = tcga_dt, gene_col = gene_col, gene_index = gene_index), envir = tcga_cache)
+      assign(tcga_data_key, list(data = tcga_dt, gene_col = gene_col, gene_index = gene_index), envir = tcga_cache)
     }
-    tcga_obj <- get(tcga_code, envir = tcga_cache, inherits = FALSE)
-
-    if (is.null(gene_map_cache)) {
-      map_file <- "/Users/peng/Desktop/Project/DROMA/others/archive/Align/Input/bulkformer/bulkformer_gene_info.csv"
-      if (file.exists(map_file)) {
-        gene_map_dt <- utils::read.csv(map_file, stringsAsFactors = FALSE)
-        gene_map_cache <<- stats::setNames(gene_map_dt$ensg_id, gene_map_dt$gene_symbol)
-      } else {
-        gene_map_cache <<- character(0)
-      }
-    }
+    tcga_obj <- get(tcga_data_key, envir = tcga_cache, inherits = FALSE)
 
     lookup_gene <- gene
-    if (!lookup_gene %in% names(tcga_obj$gene_index) && lookup_gene %in% names(gene_map_cache)) {
-      lookup_gene <- unname(gene_map_cache[[lookup_gene]])
+    candidate_map_paths <- unique(c(
+      if (!is.null(gene_probe_map) && nzchar(gene_probe_map)) normalizePath(gene_probe_map, mustWork = FALSE) else character(0),
+      file.path(tcga_dir, "gencode.human.v49.annotation.gene.probeMap"),
+      file.path(tcga_dir, "gencode.v22.annotation.gene.probeMap"),
+      file.path(dirname(tcga_dir), "gencode.human.v49.annotation.gene.probeMap"),
+      file.path(dirname(tcga_dir), "gencode.v22.annotation.gene.probeMap")
+    ))
+    candidate_map_paths <- candidate_map_paths[file.exists(candidate_map_paths)]
+
+    if (!lookup_gene %in% names(tcga_obj$gene_index) && length(candidate_map_paths) > 0) {
+      for (map_key in candidate_map_paths) {
+        if (!exists(map_key, envir = gene_map_cache, inherits = FALSE)) {
+          gene_map_dt <- read_gene_map(map_key)
+          if (!all(c("id", "gene") %in% colnames(gene_map_dt))) {
+            assign(map_key, character(0), envir = gene_map_cache)
+          } else {
+            gene_ids <- sub("\\.[0-9]+$", "", gene_map_dt$id)
+            assign(
+              map_key,
+              stats::setNames(gene_ids, gene_map_dt$gene),
+              envir = gene_map_cache
+            )
+          }
+        }
+        gene_map_vec <- get(map_key, envir = gene_map_cache, inherits = FALSE)
+        if (lookup_gene %in% names(gene_map_vec)) {
+          mapped_gene <- unname(gene_map_vec[[lookup_gene]])
+          if (nzchar(mapped_gene) && mapped_gene %in% names(tcga_obj$gene_index)) {
+            lookup_gene <- mapped_gene
+            break
+          }
+        }
+      }
     }
+    lookup_gene <- sub("\\.[0-9]+$", "", lookup_gene)
     row_idx <- unname(tcga_obj$gene_index[lookup_gene])
     if (length(row_idx) == 0 || is.na(row_idx)) {
       return(NULL)
@@ -179,8 +213,12 @@ loadTcgaExpressionVector <- local({
   }
 }
 
-.runTcgaTranslationOne <- function(row, cellline_set, pdcpdx_set, tcga_dir, feature_type = "mRNA") {
-  tcga_values <- loadTcgaExpressionVector(tcga_dir, row$tumor_type[[1]], row$name[[1]])
+.runTcgaTranslationOne <- function(row, cellline_set, pdcpdx_set, tcga_dir, feature_type = "mRNA",
+                                   gene_probe_map = NULL) {
+  tcga_values <- loadTcgaExpressionVector(
+    tcga_dir, row$tumor_type[[1]], row$name[[1]],
+    gene_probe_map = gene_probe_map
+  )
   cellline_values <- .collectGroupExpression(cellline_set, row$tumor_type[[1]], row$name[[1]], feature_type)
   pdcpdx_values <- .collectGroupExpression(pdcpdx_set, row$tumor_type[[1]], row$name[[1]], feature_type)
 
@@ -216,7 +254,8 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
                                      fdr_t = 0.01,
                                      cores = 1L,
                                      show_progress = TRUE,
-                                     test_top_n = NULL) {
+                                     test_top_n = NULL,
+                                     gene_probe_map = NULL) {
   candidates <- data.table::as.data.table(preclinical_candidates)
   if (nrow(candidates) == 0) {
     return(candidates)
@@ -259,7 +298,8 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
       cellline_set = cellline_set,
       pdcpdx_set = pdcpdx_set,
       tcga_dir = tcga_dir,
-      feature_type = feature_type
+      feature_type = feature_type,
+      gene_probe_map = gene_probe_map
     )
     if (!is.null(progress_callback)) {
       progress_callback(
@@ -310,7 +350,8 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
               cellline_set = cellline_set,
               pdcpdx_set = pdcpdx_set,
               tcga_dir = tcga_dir,
-              feature_type = feature_type
+              feature_type = feature_type,
+              gene_probe_map = gene_probe_map
             )
             p()
             result
@@ -329,7 +370,8 @@ runTcgaTranslationFilter <- function(preclinical_candidates,
             cellline_set = cellline_set,
             pdcpdx_set = pdcpdx_set,
             tcga_dir = tcga_dir,
-            feature_type = feature_type
+            feature_type = feature_type,
+            gene_probe_map = gene_probe_map
           )
         })
       }, .options = furrr::furrr_options(seed = TRUE))
