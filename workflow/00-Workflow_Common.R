@@ -1,22 +1,20 @@
-get_workflow_root <- function() {
-  cmd_args <- commandArgs(trailingOnly = FALSE)
-  file_arg <- grep("^--file=", cmd_args, value = TRUE)
-  candidates <- c(
-    sub("^--file=", "", file_arg),
-    if (!is.null(sys.frames()[[1]]$ofile)) sys.frames()[[1]]$ofile else character(0),
-    file.path(getwd(), "workflow", "00-Workflow_Common.R"),
-    file.path(getwd(), "00-Workflow_Common.R")
-  )
-  candidates <- unique(candidates[nzchar(candidates)])
-  existing <- candidates[file.exists(candidates)]
-  if (length(existing) == 0) {
-    stop("Could not locate workflow root")
+droma_sqlite_path <- ""
+
+get_project_root <- function() {
+  wd <- normalizePath(getwd(), mustWork = TRUE)
+  if (basename(wd) == "workflow") {
+    project_root <- dirname(wd)
+  } else {
+    project_root <- wd
   }
-  dirname(normalizePath(existing[[1]], mustWork = TRUE))
+  if (!file.exists(file.path(project_root, "workflow", "00-Workflow_Common.R"))) {
+    stop("Run from Meta_project2 root or Meta_project2/workflow")
+  }
+  project_root
 }
 
-workflow_root <- get_workflow_root()
-meta_project_root <- normalizePath(dirname(workflow_root), mustWork = TRUE)
+meta_project_root <- get_project_root()
+workflow_root <- file.path(meta_project_root, "workflow")
 repo_root <- normalizePath(dirname(meta_project_root), mustWork = TRUE)
 droma_r2_root <- file.path(meta_project_root, "DROMA_R2")
 
@@ -29,15 +27,15 @@ source_dir <- function(path) {
   invisible(lapply(files, source, local = FALSE))
 }
 
-source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairDataLoading.R"), local = FALSE)
-source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairDataPairing.R"), local = FALSE)
-source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairMetaAnalysis.R"), local = FALSE)
-source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncPairBatchFeature.R"), local = FALSE)
-source(file.path(repo_root, "DB_project", "DROMA_R", "R", "FuncClinical.R"), local = FALSE)
 source_dir(file.path(droma_r2_root, "R"))
 
 workflow_config <- buildWorkflowConfig(
   repo_root = repo_root,
+  db_path = if (nzchar(droma_sqlite_path)) {
+    droma_sqlite_path
+  } else {
+    file.path(repo_root, "Data", "droma.sqlite")
+  },
   output_base = file.path(workflow_root, "Output"),
   drug_names = "Paclitaxel",
   tumor_types = "breast cancer",

@@ -117,13 +117,15 @@ computeCoverageForGroup <- function(project_names,
   split_keys <- interaction(eligible_dt$drug, eligible_dt$tumor_type, drop = TRUE)
   candidate_list <- lapply(split(eligible_dt, split_keys), function(df) {
     pair_dt <- unique(df[, c("drug_project", "expr_project"), with = FALSE])
+    filtered_projects <- sort(unique(c(pair_dt$drug_project, pair_dt$expr_project)))
     data.table::data.table(
       drug = df$drug[1],
       tumor_type = df$tumor_type[1],
       eligible_pair_count = nrow(pair_dt),
       eligible_pairs = list(pair_dt),
       eligible_drug_projects = list(sort(unique(pair_dt$drug_project))),
-      eligible_expr_projects = list(sort(unique(pair_dt$expr_project)))
+      eligible_expr_projects = list(sort(unique(pair_dt$expr_project))),
+      filtered_projects = list(filtered_projects)
     )
   })
   candidates <- data.table::rbindlist(candidate_list, fill = TRUE)
@@ -143,6 +145,11 @@ computeCoverageForGroup <- function(project_names,
     )]
     candidates_save[, eligible_expr_projects := vapply(
       eligible_expr_projects,
+      function(x) paste(x, collapse = ";"),
+      FUN.VALUE = character(1)
+    )]
+    candidates_save[, filtered_projects := vapply(
+      filtered_projects,
       function(x) paste(x, collapse = ";"),
       FUN.VALUE = character(1)
     )]

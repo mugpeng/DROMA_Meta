@@ -127,22 +127,8 @@ getSharedGroupFeatures <- function(group_sets, feature_type = "mRNA") {
     eligible_pair_count = integer(),
     eligible_pairs = list(),
     eligible_drug_projects = list(),
-    eligible_expr_projects = list()
-  )
-}
-
-.empty_pair_screen <- function() {
-  data.table::data.table(
-    model_group = character(),
-    drug = character(),
-    tumor_type = character(),
-    drug_project = character(),
-    expr_project = character(),
-    gene = character(),
-    n_overlap = integer(),
-    effect_size = numeric(),
-    p_value = numeric(),
-    passed_pair_filter = logical()
+    eligible_expr_projects = list(),
+    filtered_projects = list()
   )
 }
 
