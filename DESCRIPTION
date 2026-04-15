@@ -1,0 +1,28 @@
+Package: DROMA.Meta
+Title: Drug Response and Omics Multi-step Meta Workflow
+Version: 0.1.0
+Date: 2026-04-15
+Authors@R:
+    person("Peng Yu", "Zhong", email = "yc47680@um.edu.mo", role = c("aut", "cre"))
+Description: DROMA.Meta wraps a four-step biomarker discovery workflow across
+    preclinical, TCGA concordance, and clinical validation stages. It provides
+    helpers for valid drug and tumor-type filtering, TCGA Anderson-Darling
+    concordance checks, and batch execution over drug and tumor-type grids.
+License: MPL-2.0 + file LICENSE
+Depends:
+    R (>= 4.0.0)
+Imports:
+    data.table,
+    DROMA.Set,
+    DROMA.R,
+    kSamples
+Suggests:
+    testthat (>= 3.0.0)
+Encoding: UTF-8
+LazyData: false
+RoxygenNote: 7.3.3
+Collate:
+    'FuncHelper.R'
+    'FuncValidCheck.R'
+    'FuncTcgaAD.R'
+    'FuncMetaWorkflow.R'

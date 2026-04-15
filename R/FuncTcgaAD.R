@@ -1,7 +1,11 @@
 # TCGA Anderson-Darling concordance helpers ----
 
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
-
+#' Get Tumor-Type Mapping to TCGA or TARGET Cohorts
+#'
+#' @description Returns the internal lookup used to map DROMA tumor types onto
+#' TCGA or TARGET cohort identifiers for concordance filtering.
+#' @return A named character vector from tumor type to cohort code.
+#' @export
 getTcgaTumorTypeMapping <- function() {
   c(
     "haematopoietic/lymphoid cancer" = "TCGA-LAML",
@@ -32,6 +36,13 @@ getTcgaTumorTypeMapping <- function() {
   )
 }
 
+#' Match a Tumor Type to Its TCGA or TARGET Cohort
+#'
+#' @description Resolves one DROMA tumor type into the corresponding cohort code
+#' used by the TCGA Anderson-Darling filtering step.
+#' @param tumor_type Tumor type string.
+#' @return A single TCGA or TARGET cohort label.
+#' @export
 getMatchedTcgaTumorType <- function(tumor_type) {
   mapping <- getTcgaTumorTypeMapping()
   if (is.null(tumor_type) || !nzchar(tumor_type)) {
@@ -50,6 +61,16 @@ getMatchedTcgaTumorType <- function(tumor_type) {
   matched
 }
 
+#' Load TCGA Feature Data for Selected Genes
+#'
+#' @description Reads TCGA/TARGET count matrices and the probe-map file, caches
+#' them in-memory, and returns per-gene vectors ready for concordance testing.
+#' @param select_features Character vector of gene names.
+#' @param tcga_tumor_type TCGA/TARGET cohort code.
+#' @param tcga_rna_counts_dir Directory containing count matrices.
+#' @param gene_probe_map_path Path to the probe-map file.
+#' @return A named list of per-gene TCGA data summaries.
+#' @export
 loadTcgaFeatureData <- local({
   tcga_cache <- new.env(parent = emptyenv())
   gene_map_cache <- new.env(parent = emptyenv())
@@ -145,6 +166,15 @@ loadTcgaFeatureData <- local({
   }
 })
 
+#' Calculate Anderson-Darling Concordance Between Two Feature Vectors
+#'
+#' @description Standardizes two numeric vectors, runs `kSamples::ad.test()`,
+#' and reports the test statistic, p-value, and concordance call.
+#' @param x First numeric vector.
+#' @param y Second numeric vector.
+#' @param p_t P-value threshold used to call concordance.
+#' @return A list with AD statistic, p-value, concordance flag, and status.
+#' @export
 calcFeatureADConcordance <- function(x, y, p_t = 0.05) {
   x <- as.numeric(x)
   y <- as.numeric(y)
@@ -206,6 +236,21 @@ calcFeatureADConcordance <- function(x, y, p_t = 0.05) {
   result
 }
 
+#' Batch TCGA Concordance Filtering for Selected Features
+#'
+#' @description Compares selected preclinical features against the matched
+#' TCGA/TARGET cohort and appends Anderson-Darling concordance statistics.
+#' @param selected_features Feature table containing at least a `name` column.
+#' @param preclinical_set `MultiDromaSet` object used as the preclinical source.
+#' @param tumor_type Tumor type string.
+#' @param tcga_rna_counts_dir Directory containing TCGA/TARGET count matrices.
+#' @param gene_probe_map_path Path to the probe-map file.
+#' @param feature_type Feature type to load, typically `"mRNA"`.
+#' @param data_type Data type passed through to `loadFeatureData()`.
+#' @param p_t P-value threshold used to call concordance.
+#' @param preclinical_label Label used as a prefix in output column names.
+#' @return A `data.table` with appended concordance statistics.
+#' @export
 batchFindTcgaADConcordantFeatures <- function(selected_features,
                                               preclinical_set,
                                               tumor_type,

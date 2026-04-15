@@ -1,3 +1,17 @@
+# Validity checks for drug and tumor-type grids ----
+
+#' Get Valid Annotation Values by Dataset Group
+#'
+#' @description Filters annotation values by dataset type and keeps only entries
+#' that appear in at least `min_project_count` projects.
+#' @param project_anno Project annotation table.
+#' @param anno_df Annotation table containing `ProjectID` and `value_col`.
+#' @param dataset_types Dataset types to retain.
+#' @param value_col Column name holding the candidate values.
+#' @param min_project_count Minimum number of projects required.
+#' @param exclude_values Optional values to remove after counting.
+#' @return A sorted character vector of retained values.
+#' @export
 getValidValues <- function(project_anno,
                            anno_df,
                            dataset_types,
@@ -25,6 +39,17 @@ getValidValues <- function(project_anno,
   sort(keep_values)
 }
 
+#' Get Valid Drugs and Tumor Types
+#'
+#' @description Computes the intersection of drug and tumor-type values that
+#' satisfy minimum project-count thresholds in both cell/PDC and PDO/PDX data.
+#' @param project_anno Project annotation table.
+#' @param drug_anno Drug annotation table.
+#' @param sample_anno Sample annotation table.
+#' @param cell_n_datasets_t Minimum project count for CellLine/PDC.
+#' @param pdcpdx_n_datasets_t Minimum project count for PDO/PDX.
+#' @return A list with `valid_drugs` and `valid_tumor_types`.
+#' @export
 getValidDrugsAndTumorTypes <- function(project_anno,
                                        drug_anno,
                                        sample_anno,
@@ -68,6 +93,19 @@ getValidDrugsAndTumorTypes <- function(project_anno,
   )
 }
 
+#' Filter Projects for a Drug and Tumor-Type Pair
+#'
+#' @description Identifies projects from a dataset group that contain both the
+#' requested drug and tumor type, and enforces a minimum project-count threshold.
+#' @param project_anno Project annotation table.
+#' @param drug_anno Drug annotation table.
+#' @param sample_anno Sample annotation table.
+#' @param dataset_types Dataset types to search.
+#' @param drug Drug name to retain.
+#' @param tumor_type Tumor type to retain.
+#' @param min_project_count Minimum number of projects required.
+#' @return A character vector of eligible project IDs.
+#' @export
 filterProjectsForDrugTumor <- function(project_anno,
                                        drug_anno,
                                        sample_anno,
