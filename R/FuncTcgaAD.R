@@ -1,7 +1,6 @@
 # TCGA Anderson-Darling concordance helpers ----
 
 source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncValidCheck.R", local = FALSE)
 
 getTcgaTumorTypeMapping <- function() {
   c(
@@ -146,29 +145,6 @@ loadTcgaFeatureData <- local({
   }
 })
 
-loadPreclinicalFeatureData <- function(dromaset_object,
-                                       feature_type,
-                                       select_features,
-                                       data_type = "all",
-                                       tumor_type = "all") {
-  if (!inherits(dromaset_object, "MultiDromaSet")) {
-    stop("dromaset_object must be a MultiDromaSet object", call. = FALSE)
-  }
-
-  feature_data <- loadFeatureData(
-    dromaset_object = dromaset_object,
-    feature_type = feature_type,
-    select_features = select_features,
-    data_type = data_type,
-    tumor_type = tumor_type,
-    overlap_only = FALSE,
-    is_continuous = TRUE,
-    zscore = FALSE
-  )
-
-  feature_data %||% list()
-}
-
 calcFeatureADConcordance <- function(x, y, p_t = 0.05) {
   x <- as.numeric(x)
   y <- as.numeric(y)
@@ -178,11 +154,8 @@ calcFeatureADConcordance <- function(x, y, p_t = 0.05) {
   result <- list(
     ad_stat = NA_real_,
     ad_p_value = NA_real_,
-    ad_method = "kSamples::ad.test",
     concordant = FALSE,
-    status = "ok",
-    x_n = length(x),
-    y_n = length(y)
+    status = "ok"
   )
 
   if (length(x) < 3) {
@@ -233,24 +206,15 @@ calcFeatureADConcordance <- function(x, y, p_t = 0.05) {
   result
 }
 
-filterADConcordantFeatures <- function(ad_stats) {
-  ad_stats <- data.table::as.data.table(ad_stats)
-  if (!nrow(ad_stats)) {
-    return(ad_stats)
-  }
-
-  ad_stats[ad_concordant %in% TRUE]
-}
-
 batchFindTcgaADConcordantFeatures <- function(selected_features,
-                                              cell_set,
-                                              pdcpdx_set,
+                                              preclinical_set,
                                               tumor_type,
                                               tcga_rna_counts_dir,
                                               gene_probe_map_path,
                                               feature_type = "mRNA",
                                               data_type = "all",
-                                              p_t = 0.05) {
+                                              p_t = 0.05,
+                                              preclinical_label = "ccle") {
   selected_dt <- data.table::as.data.table(selected_features)
   if (!nrow(selected_dt)) {
     return(data.table::as.data.table(selected_dt))
@@ -258,21 +222,20 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
 
   tcga_tumor_type <- getMatchedTcgaTumorType(tumor_type)
   genes <- unique(as.character(selected_dt$name))
+  if (!inherits(preclinical_set, "MultiDromaSet")) {
+    stop("preclinical_set must be a MultiDromaSet object", call. = FALSE)
+  }
 
-  cell_data <- loadPreclinicalFeatureData(
-    dromaset_object = cell_set,
+  preclinical_data <- loadFeatureData(
+    dromaset_object = preclinical_set,
     feature_type = feature_type,
     select_features = genes,
     data_type = data_type,
-    tumor_type = tumor_type
-  )
-  pdcpdx_data <- loadPreclinicalFeatureData(
-    dromaset_object = pdcpdx_set,
-    feature_type = feature_type,
-    select_features = genes,
-    data_type = data_type,
-    tumor_type = tumor_type
-  )
+    tumor_type = tumor_type,
+    overlap_only = FALSE,
+    is_continuous = TRUE,
+    zscore = FALSE
+  ) %||% list()
   tcga_data <- loadTcgaFeatureData(
     select_features = genes,
     tcga_tumor_type = tcga_tumor_type,
@@ -299,44 +262,40 @@ batchFindTcgaADConcordantFeatures <- function(selected_features,
     values
   }
 
+  stat_col <- paste0(preclinical_label, "_vs_tcga_ad_stat")
+  p_col <- paste0(preclinical_label, "_vs_tcga_ad_p")
+  concordant_col <- paste0(preclinical_label, "_vs_tcga_concordant")
+  n_col <- paste0(preclinical_label, "_n")
+
   ad_rows <- lapply(seq_len(nrow(selected_dt)), function(i) {
     row <- selected_dt[i]
     gene <- as.character(row$name[[1]])
 
-    cell_values <- collectValues(cell_data, gene)
-    pdcpdx_values <- collectValues(pdcpdx_data, gene)
+    preclinical_values <- collectValues(preclinical_data, gene)
     tcga_row <- tcga_data[[gene]]
     tcga_values <- tcga_row$tcga_values %||% numeric()
-
-    cell_ad <- calcFeatureADConcordance(cell_values, tcga_values, p_t = p_t)
-    pdcpdx_ad <- calcFeatureADConcordance(pdcpdx_values, tcga_values, p_t = p_t)
+    ad_result <- calcFeatureADConcordance(preclinical_values, tcga_values, p_t = p_t)
 
     ad_status <- c(
       if (!identical(tcga_row$tcga_status, "ok")) paste0("tcga=", tcga_row$tcga_status),
-      if (!identical(cell_ad$status, "ok")) paste0("cell=", cell_ad$status),
-      if (!identical(pdcpdx_ad$status, "ok")) paste0("pdcpdx=", pdcpdx_ad$status)
+      if (!identical(ad_result$status, "ok")) paste0(preclinical_label, "=", ad_result$status)
     )
     if (!length(ad_status)) {
       ad_status <- "ok"
     }
 
-    data.table::data.table(
+    out <- data.table::data.table(
       row,
       tcga_tumor_type = tcga_tumor_type,
-      cell_n = length(cell_values),
-      pdcpdx_n = length(pdcpdx_values),
       tcga_n = length(tcga_values),
-      cell_vs_tcga_ad_stat = cell_ad$ad_stat,
-      cell_vs_tcga_ad_p = cell_ad$ad_p_value,
-      cell_vs_tcga_concordant = cell_ad$concordant,
-      pdcpdx_vs_tcga_ad_stat = pdcpdx_ad$ad_stat,
-      pdcpdx_vs_tcga_ad_p = pdcpdx_ad$ad_p_value,
-      pdcpdx_vs_tcga_concordant = pdcpdx_ad$concordant,
-      ad_concordant = isTRUE(cell_ad$concordant) && isTRUE(pdcpdx_ad$concordant),
       ad_status = paste(ad_status, collapse = ";")
     )
+    out[[n_col]] <- length(preclinical_values)
+    out[[stat_col]] <- ad_result$ad_stat
+    out[[p_col]] <- ad_result$ad_p_value
+    out[[concordant_col]] <- ad_result$concordant
+    out
   })
 
-  ad_stats <- data.table::rbindlist(ad_rows, fill = TRUE)
-  ad_stats
+  data.table::rbindlist(ad_rows, fill = TRUE)
 }

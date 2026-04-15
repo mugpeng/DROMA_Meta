@@ -25,7 +25,6 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
 cat("\n=== 04: Clinical Validation ===\n")
 
-mRNA_cell_sig <- fread(file.path(output_dir, "mRNA_cell_sig.csv"))
 selected_genes_ad_filtered <- fread(file.path(output_dir, "selected_genes_ad_filtered.csv"))
 
 connectCTRDatabase(ctrdb_path)

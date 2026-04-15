@@ -7,8 +7,6 @@ library(data.table)
 library(DROMA.Set)
 library(DROMA.R)
 
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncHelper.R", local = FALSE)
-source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncValidCheck.R", local = FALSE)
 source("/Users/peng/Desktop/Project/DROMA/Meta_project3/R/FuncTcgaAD.R", local = FALSE)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
@@ -35,56 +33,31 @@ cat(sprintf("  loaded selected_genes: %d biomarkers\n", nrow(selected_genes)))
 con <- connectDROMADatabase(db_path)
 on.exit(try(close(con), silent = TRUE), add = TRUE)
 
-project_anno <- listDROMAProjects()
-drug_anno <- getDROMAAnnotation("drug")
-sample_anno <- getDROMAAnnotation("sample")
-
-cell_names <- filterProjectsForDrugTumor(
-  project_anno = project_anno,
-  drug_anno = drug_anno,
-  sample_anno = sample_anno,
-  dataset_types = c("CellLine", "PDC"),
-  drug = drug,
-  tumor_type = tumor_type,
-  min_project_count = 3
-)
-pdcpdx_names <- filterProjectsForDrugTumor(
-  project_anno = project_anno,
-  drug_anno = drug_anno,
-  sample_anno = sample_anno,
-  dataset_types = c("PDO", "PDX"),
-  drug = drug,
-  tumor_type = tumor_type,
-  min_project_count = 2
-)
-
-cell_sets <- createMultiDromaSetFromAllProjects(
+ccle_set <- createMultiDromaSetFromAllProjects(
   db_path = db_path,
-  include_projects = cell_names,
-  con = con
-)
-pdcpdx_sets <- createMultiDromaSetFromAllProjects(
-  db_path = db_path,
-  include_projects = pdcpdx_names,
+  include_projects = "CCLE",
   con = con
 )
 
 tcga_tumor_type <- getMatchedTcgaTumorType(tumor_type)
 cat("  matched TCGA/TARGET cohort:", tcga_tumor_type, "\n")
+cat("  preclinical cohort: CCLE\n")
 
 ad_stats <- batchFindTcgaADConcordantFeatures(
   selected_features = selected_genes,
-  cell_set = cell_sets,
-  pdcpdx_set = pdcpdx_sets,
+  preclinical_set = ccle_set,
   tumor_type = tumor_type,
   tcga_rna_counts_dir = tcga_rna_counts_dir,
   gene_probe_map_path = gene_probe_map_path,
   feature_type = feature2_type,
   data_type = data_type,
-  p_t = tcga_ad_p_t
+  p_t = tcga_ad_p_t,
+  preclinical_label = "ccle"
 )
 
 fwrite(ad_stats, file.path(output_dir, "selected_genes_ad_stats.csv"))
-saveRDS(ad_stats, file.path(output_dir, "selected_genes_ad_stats.rds"))
+# saveRDS(ad_stats, file.path(output_dir, "selected_genes_ad_stats.rds"))
 
 cat(sprintf("  OK selected_genes_ad_stats: %d biomarkers\n", nrow(ad_stats)))
+
+selected_genes_ad_filtered <- fread(file.path(output_dir, "selected_genes_ad_filtered.csv"))
