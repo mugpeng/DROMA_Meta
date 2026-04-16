@@ -5,7 +5,7 @@ suppressPackageStartupMessages(library(DROMA.Meta))
 suppressPackageStartupMessages(library(DROMA.Set))
 suppressPackageStartupMessages(library(DROMA.R))
 
-# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "DROMA_Meta")
 project_root <- normalizePath(getwd(), mustWork = TRUE)
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 

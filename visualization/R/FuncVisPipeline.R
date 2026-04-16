@@ -6,8 +6,9 @@
 #' remaining after each workflow stage. Bars are centred and coloured by stage.
 #' Each bar annotates the count and the attrition percentage from the previous stage.
 #' @param summary_dt A \code{data.table} produced by \code{collectWorkflowResults()}
-#'   or from \code{meta_workflow_batch_summary.csv}. Must contain at least
-#'   \code{n_batch_cell}, \code{n_selected_genes}, \code{n_ad_filtered}, and
+#'   or from \code{meta_workflow_batch_summary.csv}. Uses whichever pipeline
+#'   count columns are available among \code{n_batch_cell},
+#'   \code{n_selected_genes}, \code{n_ad_filtered}, \code{n_clinical_sig}, and
 #'   \code{n_final_biomarkers}.
 #' @param title Plot title.
 #' @return A ggplot2 object.
@@ -19,32 +20,44 @@ plotPipelineFunnel <- function(summary_dt,
     stop("summary_dt has no rows", call. = FALSE)
   }
 
-  # Aggregate across all pairs
-  agg <- summary_dt[, lapply(.SD, sum, na.rm = TRUE),
-    .SDcols = intersect(
-      c("n_batch_cell", "n_selected_genes", "n_ad_filtered",
-        "n_clinical_sig", "n_final_biomarkers"),
-      names(summary_dt)
-    )
-  ]
-
   stages <- c(
     "All genes tested"  = "n_batch_cell",
     "Preclinical intersection" = "n_selected_genes",
     "TCGA-AD filtered"  = "n_ad_filtered",
+    "Clinical significant" = "n_clinical_sig",
     "Clinical validated" = "n_final_biomarkers"
   )
+  available_stages <- stages[stages %in% names(summary_dt)]
+  if (!length(available_stages)) {
+    stop(
+      "summary_dt must contain at least one pipeline count column: ",
+      paste(unname(stages), collapse = ", "),
+      call. = FALSE
+    )
+  }
 
-  counts <- vapply(stages, function(k) {
-    if (k %in% names(agg)) as.numeric(agg[[k]]) else NA_real_
+  # Aggregate across all pairs
+  agg <- summary_dt[, lapply(.SD, sum, na.rm = TRUE),
+    .SDcols = unname(available_stages)
+  ]
+
+  counts <- vapply(available_stages, function(k) {
+    as.numeric(agg[[k]])
   }, numeric(1))
 
   stage_colors <- getMetaVisColors("stage")
+  funnel_colors <- c(
+    "All genes tested" = stage_colors[["Cell batch"]],
+    "Preclinical intersection" = stage_colors[["Intersection"]],
+    "TCGA-AD filtered" = stage_colors[["TCGA-AD filtered"]],
+    "Clinical significant" = stage_colors[["Clinical validated"]],
+    "Clinical validated" = stage_colors[["Clinical validated"]]
+  )
 
   plot_dt <- data.table::data.table(
-    stage = factor(names(stages), levels = rev(names(stages))),
+    stage = factor(names(available_stages), levels = rev(names(available_stages))),
     count = counts,
-    key   = stages
+    stage_key = unname(available_stages)
   )
 
   # Compute attrition percentage
@@ -64,7 +77,7 @@ plotPipelineFunnel <- function(summary_dt,
       ggplot2::aes(x = count * 0.5, label = pct),
       hjust = 0.5, size = 3.2, color = "white", fontface = "bold"
     ) +
-    ggplot2::scale_fill_manual(values = stage_colors[names(stages)], guide = "none") +
+    ggplot2::scale_fill_manual(values = funnel_colors[names(available_stages)], guide = "none") +
     ggplot2::labs(
       title = title,
       x = "Number of features",
@@ -77,7 +90,7 @@ plotPipelineFunnel <- function(summary_dt,
       panel.grid.major.x = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank()
     ) +
-    ggplot2::expand_limits(x = max(counts, na.rm = TRUE) * 1.18)
+    ggplot2::expand_limits(x = max(1, max(counts, na.rm = TRUE) * 1.18))
 }
 
 #' Plot Number of Final Biomarkers per Drug-Tumor Pair

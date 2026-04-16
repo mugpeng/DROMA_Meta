@@ -51,6 +51,7 @@ preclinical_cols <- grep("effect_size.*(invitro|cell|pdcpdx)", names(final_bioma
 if (nrow(final_biomarkers) > 0 && length(preclinical_cols) > 0 && "effect_size_ctrdb" %in% names(final_biomarkers)) {
   preclinical_col <- intersect(c("effect_size_pdcpdx_invitro", "effect_size_cell_invitro"), preclinical_cols)
   if (!length(preclinical_col)) preclinical_col <- preclinical_cols[1]
+  preclinical_col <- preclinical_col[1]
   panels$C <- plotConcordanceScatter(final_biomarkers,
     preclinical_es_col = preclinical_col,
     clinical_es_col = "effect_size_ctrdb",

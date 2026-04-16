@@ -179,6 +179,24 @@ collectWorkflowResults <- function(output_base) {
       info$drug <- basename(drug_dir)
       info$tumor_type <- basename(pair_dir)
 
+      count_file_rows <- function(filename) {
+        path <- file.path(pair_dir, filename)
+        if (!file.exists(path)) return(NA_integer_)
+        nrow(data.table::fread(path, select = 1L))
+      }
+      if (!"n_batch_cell" %in% names(info)) {
+        info$n_batch_cell <- count_file_rows("batch_cell_sets_mRNA.csv")
+      }
+      if (!"n_selected_genes" %in% names(info)) {
+        info$n_selected_genes <- count_file_rows("selected_genes.csv")
+      }
+      if (!"n_ad_filtered" %in% names(info)) {
+        info$n_ad_filtered <- count_file_rows("selected_genes_ad_filtered.csv")
+      }
+      if (!"n_final_biomarkers" %in% names(info)) {
+        info$n_final_biomarkers <- count_file_rows("final_biomarkers.csv")
+      }
+
       rows[[length(rows) + 1L]] <- info
     }
   }

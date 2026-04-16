@@ -8,8 +8,9 @@ plotPipelineFunnel(summary_dt, title = "Biomarker discovery pipeline")
 }
 \arguments{
 \item{summary_dt}{A \code{data.table} produced by \code{collectWorkflowResults()}
-or from \code{meta_workflow_batch_summary.csv}. Must contain at least
-\code{n_batch_cell}, \code{n_selected_genes}, \code{n_ad_filtered}, and
+or from \code{meta_workflow_batch_summary.csv}. Uses whichever pipeline
+count columns are available among \code{n_batch_cell},
+\code{n_selected_genes}, \code{n_ad_filtered}, \code{n_clinical_sig}, and
 \code{n_final_biomarkers}.}
 
 \item{title}{Plot title.}

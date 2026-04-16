@@ -68,6 +68,11 @@ plotBiomarkerHeatmap <- function(final_biomarkers,
     c(hm_colors[["low"]], hm_colors[["mid"]], hm_colors[["high"]])
   )
 
+  cluster_dist <- function(x) {
+    x[!is.finite(x)] <- 0
+    stats::dist(x)
+  }
+
   # Cell text layer
   cell_fun <- NULL
   if (show_cell_text && nrow(mat) <= 40) {
@@ -95,6 +100,8 @@ plotBiomarkerHeatmap <- function(final_biomarkers,
     na_col           = "grey92",
     cluster_rows     = TRUE,
     cluster_columns  = TRUE,
+    clustering_distance_rows = cluster_dist,
+    clustering_distance_columns = cluster_dist,
     show_row_dend    = FALSE,
     show_column_dend = FALSE,
     rect_gp          = grid::gpar(col = "white", lwd = 0.5),

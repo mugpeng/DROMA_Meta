@@ -34,6 +34,7 @@ if (nrow(final_biomarkers) == 0) {
   preferred_order <- c("effect_size_pdcpdx_invitro", "effect_size_cell_invitro")
   preclinical_col <- intersect(preferred_order, preclinical_cols)
   if (!length(preclinical_col)) preclinical_col <- preclinical_cols[1]
+  preclinical_col <- preclinical_col[1]
   cat(sprintf("  Using preclinical column: %s\n", preclinical_col))
 
   p <- plotConcordanceScatter(
