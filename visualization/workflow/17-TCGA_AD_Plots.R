@@ -32,11 +32,18 @@ if (nrow(ad_stats) == 0) {
   cat("  OK tcga_ad_pvalue_histogram.pdf\n")
 
   # 2) AD statistic density (concordant vs non-concordant)
-  p_density <- plotTcgaAdDensity(ad_stats, output_base = defaults$output_base)
-  saveMetaVisPdf(p_density, file.path(vis_output, "tcga_ad_density.pdf"),
-    width = 7.2, height = 5
+  tryCatch(
+    {
+      p_density <- plotTcgaAdDensity(ad_stats, output_base = defaults$output_base)
+      saveMetaVisPdf(p_density, file.path(vis_output, "tcga_ad_density.pdf"),
+        width = 7.2, height = 5
+      )
+      cat("  OK tcga_ad_density.pdf\n")
+    },
+    error = function(e) {
+      cat("  SKIP tcga_ad_density: ", conditionMessage(e), "\n", sep = "")
+    }
   )
-  cat("  OK tcga_ad_density.pdf\n")
 }
 
 cat("\nDone.\n")

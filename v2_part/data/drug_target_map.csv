@@ -1,0 +1,546 @@
+drug,target_gene,target_source,evidence_level,molecule_chembl_id,target_chembl_id,mechanism_of_action
+4'-Epiadriamycin,TOP2A,manual,canonical_anthracycline_alias,CHEMBL417,,Topoisomerase II inhibitor
+4'-Epiadriamycin,TOP2B,manual,canonical_anthracycline_alias,CHEMBL417,,Topoisomerase II inhibitor
+5-Fluorouracil,TYMS,ChEMBL,mechanism,CHEMBL185,CHEMBL1952,Thymidylate synthase inhibitor
+Afatinib,EGFR,ChEMBL,mechanism,CHEMBL2105712,CHEMBL203,Epidermal growth factor receptor erbB1 inhibitor
+Afatinib,ERBB2,ChEMBL,mechanism,CHEMBL2105712,CHEMBL1824,Receptor protein-tyrosine kinase erbB-2 inhibitor
+Afatinib,ERBB4,ChEMBL,mechanism,CHEMBL2105712,CHEMBL3009,Receptor protein-tyrosine kinase erbB-4 inhibitor
+alisertib,AURKA,ChEMBL,mechanism,CHEMBL483158,CHEMBL4722,Serine/threonine-protein kinase Aurora-A inhibitor
+Axitinib,FLT1,ChEMBL,mechanism,CHEMBL1289926,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Axitinib,FLT4,ChEMBL,mechanism,CHEMBL1289926,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Axitinib,KDR,ChEMBL,mechanism,CHEMBL1289926,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Azacitidine,DNMT3A,ChEMBL,mechanism,CHEMBL1489,CHEMBL1992,DNA (cytosine-5)-methyltransferase 3A inhibitor
+Azacitidine,DNMT1,ChEMBL,mechanism,CHEMBL1489,CHEMBL1993,DNA (cytosine-5)-methyltransferase 1 inhibitor
+AZD7762,CHEK1,ChEMBL,mechanism,CHEMBL2041933,CHEMBL4630,Serine/threonine-protein kinase Chk1 inhibitor
+Belinostat,HDAC1,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC3,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC6,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC2,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC5,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC7,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC8,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC11,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC4,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC9,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Belinostat,HDAC10,ChEMBL,mechanism,CHEMBL408513,CHEMBL2093865,Histone deacetylase inhibitor
+Bortezomib,PSMD1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB2,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB5,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB8,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB9,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB6,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD14,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA2,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA3,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA4,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA5,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA6,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA7,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMA8,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB10,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB11,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB3,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB4,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMB7,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,ADRM1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC2,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC4,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC6,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC3,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMC5,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD2,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD3,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD12,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD11,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD6,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD7,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD13,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD4,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,PSMD8,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bortezomib,SEM1,ChEMBL,mechanism,CHEMBL5315122,CHEMBL2364701,26S proteasome inhibitor
+Bosutinib,ABL1,ChEMBL,mechanism,CHEMBL2095206,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Bosutinib,BCR,ChEMBL,mechanism,CHEMBL2095206,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Bosutinib,ABL1,ChEMBL,mechanism,CHEMBL288441,CHEMBL1862,Tyrosine-protein kinase ABL inhibitor
+Bosutinib,SRC,ChEMBL,mechanism,CHEMBL288441,CHEMBL267,Tyrosine-protein kinase SRC inhibitor
+Bosutinib,HCK,ChEMBL,mechanism,CHEMBL288441,CHEMBL3234,Tyrosine-protein kinase HCK inhibitor
+Bosutinib,LYN,ChEMBL,mechanism,CHEMBL288441,CHEMBL3905,Tyrosine-protein kinase Lyn inhibitor
+Clofarabine,RRM1,ChEMBL,mechanism,CHEMBL1750,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Clofarabine,RRM2B,ChEMBL,mechanism,CHEMBL1750,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Clofarabine,RRM2,ChEMBL,mechanism,CHEMBL1750,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Clofarabine,POLA1,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLD4,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLD3,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLD1,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLD2,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLE,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLA2,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,PRIM1,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,PRIM2,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLE2,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Clofarabine,POLE3,ChEMBL,mechanism,CHEMBL1750,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Crizotinib,MET,ChEMBL,mechanism,CHEMBL601719,CHEMBL3717,Hepatocyte growth factor receptor inhibitor
+Crizotinib,ALK,ChEMBL,mechanism,CHEMBL601719,CHEMBL4247,ALK tyrosine kinase receptor inhibitor
+Crizotinib,ALK,ChEMBL,mechanism,CHEMBL601719,CHEMBL3883330,EML4-ALK inhibitor
+Crizotinib,EML4,ChEMBL,mechanism,CHEMBL601719,CHEMBL3883330,EML4-ALK inhibitor
+Crizotinib,ALK,ChEMBL,mechanism,CHEMBL601719,CHEMBL2111387,NPM/ALK (Nucleophosmin/ALK tyrosine kinase receptor) inhibitor
+Crizotinib,NPM1,ChEMBL,mechanism,CHEMBL601719,CHEMBL2111387,NPM/ALK (Nucleophosmin/ALK tyrosine kinase receptor) inhibitor
+Crizotinib,ROS1,ChEMBL,mechanism,CHEMBL601719,CHEMBL5568,Proto-oncogene tyrosine-protein kinase ROS inhibitor
+Crizotinib,MST1R,ChEMBL,mechanism,CHEMBL601719,CHEMBL2689,Macrophage-stimulating protein receptor inhibitor
+Cytarabine,POLA1,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD4,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD3,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD1,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD2,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLA2,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,PRIM1,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,PRIM2,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE2,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE3,ChEMBL,mechanism,CHEMBL803,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,NS5b,ChEMBL,mechanism,CHEMBL393820,CHEMBL4296320,RNA-directed RNA polymerase inhibitor
+Cytarabine,pol,ChEMBL,mechanism,CHEMBL38700,CHEMBL247,Human immunodeficiency virus type 1 reverse transcriptase inhibitor
+Cytarabine,P,ChEMBL,mechanism,CHEMBL38700,CHEMBL2362994,DNA polymerase/reverse transcriptase inhibitor
+Cytarabine,pol,ChEMBL,mechanism,CHEMBL853,CHEMBL247,Human immunodeficiency virus type 1 reverse transcriptase inhibitor
+Cytarabine,pol,ChEMBL,mechanism,CHEMBL885,CHEMBL247,Human immunodeficiency virus type 1 reverse transcriptase inhibitor
+Cytarabine,pol,ChEMBL,mechanism,CHEMBL109831,CHEMBL247,Human immunodeficiency virus type 1 reverse transcriptase inhibitor
+Cytarabine,POLA1,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD4,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD3,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD1,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLD2,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLA2,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,PRIM1,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,PRIM2,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE2,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,POLE3,ChEMBL,mechanism,CHEMBL359164,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Cytarabine,pol,ChEMBL,mechanism,CHEMBL210651,CHEMBL247,Human immunodeficiency virus type 1 reverse transcriptase inhibitor
+Cytarabine,reverse,ChEMBL,mechanism,CHEMBL210651,CHEMBL1681630,Reverse transcriptase inhibitor
+Dactolisib,MTOR,ChEMBL,mechanism,CHEMBL1879463,CHEMBL2842,Serine/threonine-protein kinase mTOR inhibitor
+Dactolisib,PIK3R1,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3CB,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3CG,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3CA,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3R2,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3CD,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3R5,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Dactolisib,PIK3R3,ChEMBL,mechanism,CHEMBL1879463,CHEMBL3559703,PI3-kinase class I inhibitor
+Daporinad,NAMPT,ChEMBL,mechanism,CHEMBL566757,CHEMBL1744525,Nicotinamide phosphoribosyltransferase inhibitor
+Dasatinib,ABL1,ChEMBL,mechanism,CHEMBL1421,CHEMBL1862,Tyrosine-protein kinase ABL inhibitor
+Dasatinib,PDGFRB,ChEMBL,mechanism,CHEMBL1421,CHEMBL1913,Platelet-derived growth factor receptor beta inhibitor
+Dasatinib,KIT,ChEMBL,mechanism,CHEMBL1421,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Dasatinib,EPHA2,ChEMBL,mechanism,CHEMBL1421,CHEMBL2068,Ephrin type-A receptor 2 inhibitor
+Dasatinib,FYN,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,SRC,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,LCK,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,YES1,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,BLK,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,HCK,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,LYN,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,FRK,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,FGR,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,SRMS,ChEMBL,mechanism,CHEMBL1421,CHEMBL2363074,SRC inhibitor
+Dasatinib,ABL1,ChEMBL,mechanism,CHEMBL1421,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Dasatinib,BCR,ChEMBL,mechanism,CHEMBL1421,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Dasatinib,ABL1,ChEMBL,mechanism,CHEMBL5416410,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Dasatinib,BCR,ChEMBL,mechanism,CHEMBL5416410,CHEMBL2096618,Bcr/Abl fusion protein inhibitor
+Docetaxel,TUBB4B,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB1,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA3C,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA4A,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB3,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA1A,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB4A,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB8,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA1B,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA1C,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBA3E,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB2A,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB2B,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB6,ChEMBL,mechanism,CHEMBL92,CHEMBL2095182,Tubulin stabiliser
+Docetaxel,TUBB4B,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB1,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA3C,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA4A,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB3,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA1A,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB4A,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB8,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA1B,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA1C,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBA3E,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB2A,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB2B,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Docetaxel,TUBB6,ChEMBL,mechanism,CHEMBL3545252,CHEMBL2095182,Tubulin inhibitor
+Doxorubicin,GNRHR,ChEMBL,mechanism,CHEMBL3544954,CHEMBL1855,Gonadotropin-releasing hormone receptor agonist
+Erlotinib,EGFR,ChEMBL,mechanism,CHEMBL1079742,CHEMBL203,Epidermal growth factor receptor erbB1 inhibitor
+Etoposide,TOP2A,ChEMBL,mechanism,CHEMBL1200645,CHEMBL1806,DNA topoisomerase II alpha inhibitor
+Etoposide,TOP2A,ChEMBL,mechanism,CHEMBL44657,CHEMBL2094255,DNA topoisomerase II inhibitor
+Etoposide,TOP2B,ChEMBL,mechanism,CHEMBL44657,CHEMBL2094255,DNA topoisomerase II inhibitor
+Everolimus,FKBP1A,ChEMBL,mechanism,CHEMBL1908360,CHEMBL1902,FK506-binding protein 1A inhibitor
+foretinib,FLT3,ChEMBL,mechanism,CHEMBL1230609,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+foretinib,KIT,ChEMBL,mechanism,CHEMBL1230609,CHEMBL1936,Stem cell growth factor receptor inhibitor
+foretinib,MET,ChEMBL,mechanism,CHEMBL1230609,CHEMBL3717,Hepatocyte growth factor receptor inhibitor
+foretinib,PDGFRB,ChEMBL,mechanism,CHEMBL1230609,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+foretinib,PDGFRA,ChEMBL,mechanism,CHEMBL1230609,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+foretinib,TEK,ChEMBL,mechanism,CHEMBL1230609,CHEMBL4128,Tyrosine-protein kinase TIE-2 inhibitor
+foretinib,FLT1,ChEMBL,mechanism,CHEMBL1230609,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+foretinib,FLT4,ChEMBL,mechanism,CHEMBL1230609,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+foretinib,KDR,ChEMBL,mechanism,CHEMBL1230609,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Gefitinib,EGFR,ChEMBL,mechanism,CHEMBL939,CHEMBL203,Epidermal growth factor receptor erbB1 inhibitor
+Gemcitabine,RRM1,ChEMBL,mechanism,CHEMBL1637,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Gemcitabine,RRM2B,ChEMBL,mechanism,CHEMBL1637,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Gemcitabine,RRM2,ChEMBL,mechanism,CHEMBL1637,CHEMBL2095215,Ribonucleoside-diphosphate reductase RR1 inhibitor
+Gemcitabine,POLA1,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLD4,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLD3,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLD1,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLD2,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLE,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLA2,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,PRIM1,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,PRIM2,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLE2,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+Gemcitabine,POLE3,ChEMBL,mechanism,CHEMBL1637,CHEMBL2363042,DNA polymerase (alpha/delta/epsilon) inhibitor
+HKI-272,EGFR,ChEMBL,mechanism,CHEMBL180022,CHEMBL203,Epidermal growth factor receptor erbB1 inhibitor
+HKI-272,ERBB2,ChEMBL,mechanism,CHEMBL180022,CHEMBL1824,Receptor protein-tyrosine kinase erbB-2 inhibitor
+HKI-272,ERBB4,ChEMBL,mechanism,CHEMBL180022,CHEMBL3009,Receptor protein-tyrosine kinase erbB-4 inhibitor
+Ixabepilone,TUBB4B,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB1,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA3C,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA4A,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB3,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA1A,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB4A,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB8,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA1B,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA1C,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBA3E,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB2A,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB2B,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Ixabepilone,TUBB6,ChEMBL,mechanism,CHEMBL1201752,CHEMBL2095182,Tubulin inhibitor
+Lapatinib,ERBB2,ChEMBL,mechanism,CHEMBL1201179,CHEMBL1824,Receptor protein-tyrosine kinase erbB-2 inhibitor
+Lapatinib,EGFR,ChEMBL,mechanism,CHEMBL1201179,CHEMBL203,Epidermal growth factor receptor erbB1 inhibitor
+Masitinib,FGFR3,ChEMBL,mechanism,CHEMBL1908391,CHEMBL2742,Fibroblast growth factor receptor 3 inhibitor
+Masitinib,KIT,ChEMBL,mechanism,CHEMBL1908391,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Masitinib,PDGFRB,ChEMBL,mechanism,CHEMBL1908391,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+Masitinib,PDGFRA,ChEMBL,mechanism,CHEMBL1908391,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+Methotrexate,DHFR,ChEMBL,mechanism,CHEMBL3244648,CHEMBL202,Dihydrofolate reductase inhibitor
+Methotrexate,DHFR,ChEMBL,mechanism,CHEMBL34259,CHEMBL202,Dihydrofolate reductase inhibitor
+Mitoxantrone,TOP2A,ChEMBL,mechanism,CHEMBL1417019,CHEMBL1806,DNA topoisomerase II alpha inhibitor
+Olaparib,PARP1,ChEMBL,mechanism,CHEMBL521686,CHEMBL3390820,"PARP 1, 2 and 3 inhibitor"
+Olaparib,PARP3,ChEMBL,mechanism,CHEMBL521686,CHEMBL3390820,"PARP 1, 2 and 3 inhibitor"
+Olaparib,PARP2,ChEMBL,mechanism,CHEMBL521686,CHEMBL3390820,"PARP 1, 2 and 3 inhibitor"
+Paclitaxel,TUBB4B,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB1,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA3C,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA4A,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB3,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA1A,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB4A,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB8,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA1B,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA1C,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBA3E,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB2A,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB2B,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB6,ChEMBL,mechanism,CHEMBL428647,CHEMBL2095182,Tubulin inhibitor
+Paclitaxel,TUBB4B,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB1,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA3C,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA4A,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB3,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA1A,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB4A,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB8,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA1B,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA1C,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBA3E,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB2A,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB2B,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Paclitaxel,TUBB6,ChEMBL,mechanism,CHEMBL2108628,CHEMBL2095182,Tubulin stabiliser
+Palbociclib,CCND1,ChEMBL,mechanism,CHEMBL189963,CHEMBL2111455,CDK6/cyclin D1 inhibitor
+Palbociclib,CDK6,ChEMBL,mechanism,CHEMBL189963,CHEMBL2111455,CDK6/cyclin D1 inhibitor
+Palbociclib,CDK4,ChEMBL,mechanism,CHEMBL189963,CHEMBL1907601,Cyclin-dependent kinase 4/cyclin D1 inhibitor
+Palbociclib,CCND1,ChEMBL,mechanism,CHEMBL189963,CHEMBL1907601,Cyclin-dependent kinase 4/cyclin D1 inhibitor
+Panobinostat,HDAC1,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC3,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC6,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC2,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC5,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC7,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC8,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC11,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC4,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC9,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC10,ChEMBL,mechanism,CHEMBL3545368,CHEMBL2093865,Histone deacetylase inhibitor
+Panobinostat,HDAC1,ChEMBL,mechanism,CHEMBL98,CHEMBL325,Histone deacetylase 1 inhibitor
+Panobinostat,HDAC3,ChEMBL,mechanism,CHEMBL98,CHEMBL1829,Histone deacetylase 3 inhibitor
+Panobinostat,HDAC6,ChEMBL,mechanism,CHEMBL98,CHEMBL1865,Histone deacetylase 6 inhibitor
+Panobinostat,HDAC2,ChEMBL,mechanism,CHEMBL98,CHEMBL1937,Histone deacetylase 2 inhibitor
+PLX-4032,BRAF,ChEMBL,mechanism,CHEMBL1229517,CHEMBL5145,Serine/threonine-protein kinase B-raf inhibitor
+PLX-4032,CSF1R,ChEMBL,mechanism,CHEMBL3545381,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+PLX-4032,NTRK1,ChEMBL,mechanism,CHEMBL3545381,CHEMBL2815,Nerve growth factor receptor Trk-A inhibitor
+PLX-4032,NTRK2,ChEMBL,mechanism,CHEMBL3545381,CHEMBL4898,Neurotrophic tyrosine kinase receptor type 2 inhibitor
+PLX-4032,NTRK3,ChEMBL,mechanism,CHEMBL3545381,CHEMBL5608,NT-3 growth factor receptor inhibitor
+PLX-4032,CSF1R,ChEMBL,mechanism,CHEMBL3639728,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+PLX-4032,CSF1R,ChEMBL,mechanism,CHEMBL3813873,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+PLX-4032,FLT3,ChEMBL,mechanism,CHEMBL3813873,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+PLX-4032,KIT,ChEMBL,mechanism,CHEMBL3813873,CHEMBL1936,Stem cell growth factor receptor inhibitor
+PLX-4032,BRAF,ChEMBL,mechanism,CHEMBL4303729,CHEMBL5145,Serine/threonine-protein kinase B-raf inhibitor
+PLX-4032,BRAF,ChEMBL,mechanism,CHEMBL3545080,CHEMBL5145,Serine/threonine-protein kinase B-raf inhibitor
+PLX-4032,RAF1,ChEMBL,mechanism,CHEMBL3545082,CHEMBL1906,Serine/threonine-protein kinase RAF inhibitor
+PLX-4032,CSF1R,ChEMBL,mechanism,CHEMBL3989973,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+PLX-4032,FLT3,ChEMBL,mechanism,CHEMBL3989973,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+PLX-4032,KIT,ChEMBL,mechanism,CHEMBL3989973,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Rapamycin,FKBP1A,ChEMBL,mechanism,CHEMBL413,CHEMBL1902,FK506-binding protein 1A inhibitor
+regorafenib,ABL1,ChEMBL,mechanism,CHEMBL1946170,CHEMBL1862,Tyrosine-protein kinase ABL inhibitor
+regorafenib,RAF1,ChEMBL,mechanism,CHEMBL1946170,CHEMBL1906,Serine/threonine-protein kinase RAF inhibitor
+regorafenib,KIT,ChEMBL,mechanism,CHEMBL1946170,CHEMBL1936,Stem cell growth factor receptor inhibitor
+regorafenib,FGFR1,ChEMBL,mechanism,CHEMBL1946170,CHEMBL3650,Fibroblast growth factor receptor 1 inhibitor
+regorafenib,MAPK11,ChEMBL,mechanism,CHEMBL1946170,CHEMBL3961,MAP kinase p38 beta inhibitor
+regorafenib,FGFR2,ChEMBL,mechanism,CHEMBL1946170,CHEMBL4142,Fibroblast growth factor receptor 2 inhibitor
+regorafenib,FRK,ChEMBL,mechanism,CHEMBL1946170,CHEMBL4223,Tyrosine-protein kinase FRK inhibitor
+regorafenib,DDR2,ChEMBL,mechanism,CHEMBL1946170,CHEMBL5122,Discoidin domain-containing receptor 2 inhibitor
+regorafenib,BRAF,ChEMBL,mechanism,CHEMBL1946170,CHEMBL5145,Serine/threonine-protein kinase B-raf inhibitor
+regorafenib,TEK,ChEMBL,mechanism,CHEMBL1946170,CHEMBL4128,Tyrosine-protein kinase TIE-2 inhibitor
+regorafenib,PDGFRB,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+regorafenib,PDGFRA,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+regorafenib,FLT1,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+regorafenib,FLT4,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+regorafenib,KDR,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+regorafenib,RET,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2041,Tyrosine-protein kinase receptor RET inhibitor
+regorafenib,EPHA2,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2068,Ephrin type-A receptor 2 inhibitor
+regorafenib,NTRK1,ChEMBL,mechanism,CHEMBL1946170,CHEMBL2815,Nerve growth factor receptor Trk-A inhibitor
+ribociclib,CDK4,ChEMBL,mechanism,CHEMBL3545110,CHEMBL331,Cyclin-dependent kinase 4 inhibitor
+ribociclib,CDK6,ChEMBL,mechanism,CHEMBL3545110,CHEMBL2508,Cyclin-dependent kinase 6 inhibitor
+ribociclib,CDK4,ChEMBL,mechanism,CHEMBL3707266,CHEMBL331,Cyclin-dependent kinase 4 inhibitor
+ribociclib,CDK6,ChEMBL,mechanism,CHEMBL3707266,CHEMBL2508,Cyclin-dependent kinase 6 inhibitor
+Saracatinib,ABL1,ChEMBL,mechanism,CHEMBL217092,CHEMBL1862,Tyrosine-protein kinase ABL inhibitor
+Saracatinib,SRC,ChEMBL,mechanism,CHEMBL217092,CHEMBL267,Tyrosine-protein kinase SRC inhibitor
+Sepantronium bromide,ACHE,ChEMBL,mechanism,CHEMBL812,CHEMBL220,Acetylcholinesterase inhibitor
+Sepantronium bromide,CHRM3,ChEMBL,mechanism,CHEMBL1240,CHEMBL245,Muscarinic acetylcholine receptor M3 antagonist
+Sepantronium bromide,CHRM1,ChEMBL,mechanism,CHEMBL1240,CHEMBL216,Muscarinic acetylcholine receptor M1 antagonist
+Sepantronium bromide,CHRM2,ChEMBL,mechanism,CHEMBL1240,CHEMBL211,Muscarinic acetylcholine receptor M2 antagonist
+Sepantronium bromide,CHRM3,ChEMBL,mechanism,CHEMBL523299,CHEMBL245,Muscarinic acetylcholine receptor M3 antagonist
+Sepantronium bromide,CHRM3,ChEMBL,mechanism,CHEMBL551466,CHEMBL245,Muscarinic acetylcholine receptor M3 antagonist
+Sepantronium bromide,ACHE,ChEMBL,mechanism,CHEMBL1200514,CHEMBL220,Acetylcholinesterase inhibitor
+Sepantronium bromide,CHRNA1,ChEMBL,mechanism,CHEMBL1200549,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNG,ChEMBL,mechanism,CHEMBL1200549,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNB1,ChEMBL,mechanism,CHEMBL1200549,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRND,ChEMBL,mechanism,CHEMBL1200549,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNE,ChEMBL,mechanism,CHEMBL1200549,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNA1,ChEMBL,mechanism,CHEMBL1200629,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNG,ChEMBL,mechanism,CHEMBL1200629,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNB1,ChEMBL,mechanism,CHEMBL1200629,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRND,ChEMBL,mechanism,CHEMBL1200629,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNE,ChEMBL,mechanism,CHEMBL1200629,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNA1,ChEMBL,mechanism,CHEMBL1200648,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNG,ChEMBL,mechanism,CHEMBL1200648,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNB1,ChEMBL,mechanism,CHEMBL1200648,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRND,ChEMBL,mechanism,CHEMBL1200648,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRNE,ChEMBL,mechanism,CHEMBL1200648,CHEMBL2362997,Muscle-type nicotinic acetylcholine receptor antagonist
+Sepantronium bromide,CHRM3,ChEMBL,mechanism,CHEMBL1200950,CHEMBL245,Muscarinic acetylcholine receptor M3 antagonist
+Sepantronium bromide,CHRM1,ChEMBL,mechanism,CHEMBL1200950,CHEMBL216,Muscarinic acetylcholine receptor M1 antagonist
+Sepantronium bromide,CHRM3,ChEMBL,mechanism,CHEMBL1201027,CHEMBL245,Muscarinic acetylcholine receptor M3 antagonist
+Sepantronium bromide,CHRM1,ChEMBL,mechanism,CHEMBL1201027,CHEMBL216,Muscarinic acetylcholine receptor M1 antagonist
+Sepantronium bromide,OPRM1,ChEMBL,mechanism,CHEMBL1201770,CHEMBL233,Mu opioid receptor antagonist
+Simvastatin,HMGCR,ChEMBL,mechanism,CHEMBL1064,CHEMBL402,HMG-CoA reductase inhibitor
+Simvastatin,HMGCR,ChEMBL,mechanism,CHEMBL503,CHEMBL402,HMG-CoA reductase inhibitor
+Sorafenib,RAF1,ChEMBL,mechanism,CHEMBL1200485,CHEMBL1906,Serine/threonine-protein kinase RAF inhibitor
+Sorafenib,PDGFRB,ChEMBL,mechanism,CHEMBL1200485,CHEMBL1913,Platelet-derived growth factor receptor beta inhibitor
+Sorafenib,KIT,ChEMBL,mechanism,CHEMBL1200485,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Sorafenib,FLT3,ChEMBL,mechanism,CHEMBL1200485,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+Sorafenib,BRAF,ChEMBL,mechanism,CHEMBL1200485,CHEMBL5145,Serine/threonine-protein kinase B-raf inhibitor
+Sorafenib,FLT1,ChEMBL,mechanism,CHEMBL1200485,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sorafenib,FLT4,ChEMBL,mechanism,CHEMBL1200485,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sorafenib,KDR,ChEMBL,mechanism,CHEMBL1200485,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sorafenib,RET,ChEMBL,mechanism,CHEMBL1200485,CHEMBL2041,Tyrosine-protein kinase receptor RET inhibitor
+Sunitinib,CSF1R,ChEMBL,mechanism,CHEMBL535,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+Sunitinib,KDR,ChEMBL,mechanism,CHEMBL535,CHEMBL279,Vascular endothelial growth factor receptor 2 inhibitor
+Sunitinib,KIT,ChEMBL,mechanism,CHEMBL535,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Sunitinib,PDGFRB,ChEMBL,mechanism,CHEMBL535,CHEMBL1913,Platelet-derived growth factor receptor beta inhibitor
+Sunitinib,PDGFRA,ChEMBL,mechanism,CHEMBL535,CHEMBL2007,Platelet-derived growth factor receptor alpha inhibitor
+Sunitinib,FLT1,ChEMBL,mechanism,CHEMBL535,CHEMBL1868,Vascular endothelial growth factor receptor 1 inhibitor
+Sunitinib,FLT4,ChEMBL,mechanism,CHEMBL535,CHEMBL1955,Vascular endothelial growth factor receptor 3 inhibitor
+Sunitinib,FLT3,ChEMBL,mechanism,CHEMBL535,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+Sunitinib,RET,ChEMBL,mechanism,CHEMBL535,CHEMBL2041,Tyrosine-protein kinase receptor RET inhibitor
+Sunitinib,CSF1R,ChEMBL,mechanism,CHEMBL1567,CHEMBL1844,Macrophage colony stimulating factor receptor inhibitor
+Sunitinib,KIT,ChEMBL,mechanism,CHEMBL1567,CHEMBL1936,Stem cell growth factor receptor inhibitor
+Sunitinib,FLT3,ChEMBL,mechanism,CHEMBL1567,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+Sunitinib,PDGFRB,ChEMBL,mechanism,CHEMBL1567,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+Sunitinib,PDGFRA,ChEMBL,mechanism,CHEMBL1567,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+Sunitinib,FLT1,ChEMBL,mechanism,CHEMBL1567,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sunitinib,FLT4,ChEMBL,mechanism,CHEMBL1567,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sunitinib,KDR,ChEMBL,mechanism,CHEMBL1567,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Sunitinib,RET,ChEMBL,mechanism,CHEMBL1567,CHEMBL2041,Tyrosine-protein kinase receptor RET inhibitor
+Talazoparib,PARP1,ChEMBL,mechanism,CHEMBL3137320,CHEMBL3105,Poly [ADP-ribose] polymerase-1 inhibitor
+Talazoparib,PARP2,ChEMBL,mechanism,CHEMBL3137320,CHEMBL5366,Poly [ADP-ribose] polymerase 2 inhibitor
+Talazoparib,PARP2,ChEMBL,mechanism,CHEMBL3137318,CHEMBL5366,Poly [ADP-ribose] polymerase 2 inhibitor
+Talazoparib,PARP1,ChEMBL,mechanism,CHEMBL3137318,CHEMBL3105,Poly [ADP-ribose] polymerase-1 inhibitor
+Tamoxifen,ESR1,ChEMBL,mechanism,CHEMBL786,CHEMBL206,Estrogen receptor alpha modulator
+Temsirolimus,FKBP1A,ChEMBL,mechanism,CHEMBL1201182,CHEMBL1902,FK506-binding protein 1A inhibitor
+Teniposide,TOP2A,ChEMBL,mechanism,CHEMBL452231,CHEMBL2094255,DNA topoisomerase II inhibitor
+Teniposide,TOP2B,ChEMBL,mechanism,CHEMBL452231,CHEMBL2094255,DNA topoisomerase II inhibitor
+Tipifarnib,FNTA,ChEMBL,mechanism,CHEMBL289228,CHEMBL2094108,Protein farnesyltransferase inhibitor
+Tipifarnib,FNTB,ChEMBL,mechanism,CHEMBL289228,CHEMBL2094108,Protein farnesyltransferase inhibitor
+tivantinib,MET,ChEMBL,mechanism,CHEMBL2103882,CHEMBL3717,Hepatocyte growth factor receptor inhibitor
+TKI258,FGFR3,ChEMBL,mechanism,CHEMBL522892,CHEMBL2742,Fibroblast growth factor receptor 3 inhibitor
+TKI258,FLT3,ChEMBL,mechanism,CHEMBL522892,CHEMBL1974,Tyrosine-protein kinase receptor FLT3 inhibitor
+TKI258,KIT,ChEMBL,mechanism,CHEMBL522892,CHEMBL1936,Stem cell growth factor receptor inhibitor
+TKI258,PDGFRB,ChEMBL,mechanism,CHEMBL522892,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+TKI258,PDGFRA,ChEMBL,mechanism,CHEMBL522892,CHEMBL2095189,Platelet-derived growth factor receptor inhibitor
+TKI258,FLT1,ChEMBL,mechanism,CHEMBL522892,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+TKI258,FLT4,ChEMBL,mechanism,CHEMBL522892,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+TKI258,KDR,ChEMBL,mechanism,CHEMBL522892,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Topotecan,TOP1,ChEMBL,mechanism,CHEMBL1607,CHEMBL1781,DNA topoisomerase I inhibitor
+Trametinib,MAP2K2,ChEMBL,mechanism,CHEMBL2103875,CHEMBL2111289,Dual specificity mitogen-activated protein kinase kinase; MEK1/2 inhibitor
+Trametinib,MAP2K1,ChEMBL,mechanism,CHEMBL2103875,CHEMBL2111289,Dual specificity mitogen-activated protein kinase kinase; MEK1/2 inhibitor
+Trametinib,MAP2K2,ChEMBL,mechanism,CHEMBL2105741,CHEMBL2964,Dual specificity mitogen-activated protein kinase kinase 2 inhibitor
+Trametinib,MAP2K1,ChEMBL,mechanism,CHEMBL2105741,CHEMBL3587,Dual specificity mitogen-activated protein kinase kinase 1 inhibitor
+Vandetanib,SRC,ChEMBL,mechanism,CHEMBL24828,CHEMBL267,Tyrosine-protein kinase SRC inhibitor
+Vandetanib,PTK6,ChEMBL,mechanism,CHEMBL24828,CHEMBL4601,Tyrosine-protein kinase BRK inhibitor
+Vandetanib,TEK,ChEMBL,mechanism,CHEMBL24828,CHEMBL4128,Tyrosine-protein kinase TIE-2 inhibitor
+Vandetanib,FLT1,ChEMBL,mechanism,CHEMBL24828,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Vandetanib,FLT4,ChEMBL,mechanism,CHEMBL24828,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Vandetanib,KDR,ChEMBL,mechanism,CHEMBL24828,CHEMBL2095227,Vascular endothelial growth factor receptor inhibitor
+Vandetanib,RET,ChEMBL,mechanism,CHEMBL24828,CHEMBL2041,Tyrosine-protein kinase receptor RET inhibitor
+Vandetanib,EPHA2,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHB2,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA5,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA4,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA8,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA6,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA7,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHB3,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA3,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHB1,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHB4,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA1,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHB6,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,EPHA10,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363043,Ephrin receptor inhibitor
+Vandetanib,ERBB2,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363049,Epidermal growth factor receptor inhibitor
+Vandetanib,EGFR,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363049,Epidermal growth factor receptor inhibitor
+Vandetanib,ERBB4,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363049,Epidermal growth factor receptor inhibitor
+Vandetanib,ERBB3,ChEMBL,mechanism,CHEMBL24828,CHEMBL2363049,Epidermal growth factor receptor inhibitor
+Vinblastine,TUBB4B,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB1,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA3C,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA4A,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB3,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA1A,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB4A,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB8,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA1B,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA1C,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBA3E,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB2A,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB2B,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vinblastine,TUBB6,ChEMBL,mechanism,CHEMBL378544,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB4B,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB1,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA3C,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA4A,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB3,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA1A,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB4A,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB8,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA1B,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA1C,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBA3E,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB2A,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB2B,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TUBB6,ChEMBL,mechanism,CHEMBL501867,CHEMBL2095182,Tubulin inhibitor
+Vincristine sulfate,TLR7,ChEMBL,mechanism,CHEMBL1690,CHEMBL5936,Toll-like receptor 7 antagonist
+Vincristine sulfate,TLR9,ChEMBL,mechanism,CHEMBL1690,CHEMBL5804,Toll-like receptor 9 antagonist
+Vincristine sulfate,pol,ChEMBL,mechanism,CHEMBL1200678,CHEMBL243,Human immunodeficiency virus type 1 protease inhibitor
+Vincristine sulfate,rplM,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsA,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsJ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsK,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsL,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsM,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsN,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsZ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsO,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsP,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsQ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsR1,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsR2,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsS,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsB,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsT,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsC,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsD,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsE,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsF,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsG,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsH,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpsI,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplA,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplJ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplK,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplN,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplO,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplP,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplQ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplR,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplS,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplB,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplT,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplU,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplV,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplW,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplX,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplY,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmA,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmB1,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmB2,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmC,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplC,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmD,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmE,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmF,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmG1,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmG2,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmH,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmI,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rpmJ,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplD,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplE,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplF,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplL,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,rplI,ChEMBL,mechanism,CHEMBL2218913,CHEMBL2363965,70S ribosome inhibitor
+Vincristine sulfate,SLC6A3,ChEMBL,mechanism,CHEMBL3544971,CHEMBL238,Dopamine transporter releasing agent
+Vincristine sulfate,SLC6A2,ChEMBL,mechanism,CHEMBL3544971,CHEMBL222,Norepinephrine transporter releasing agent
+Vincristine sulfate,SLC18A2,ChEMBL,mechanism,CHEMBL3544971,CHEMBL1893,Synaptic vesicular amine transporter inhibitor
+Vinorelbine,TUBB4B,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB1,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA3C,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA4A,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB3,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA1A,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB4A,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB8,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA1B,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA1C,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBA3E,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB2A,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB2B,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vinorelbine,TUBB6,ChEMBL,mechanism,CHEMBL538943,CHEMBL2095182,Tubulin inhibitor
+Vismodegib,SMO,ChEMBL,mechanism,CHEMBL473417,CHEMBL5971,Smoothened homolog inhibitor
+Vorinostat,HDAC1,ChEMBL,mechanism,CHEMBL98,CHEMBL325,Histone deacetylase 1 inhibitor
+Vorinostat,HDAC3,ChEMBL,mechanism,CHEMBL98,CHEMBL1829,Histone deacetylase 3 inhibitor
+Vorinostat,HDAC6,ChEMBL,mechanism,CHEMBL98,CHEMBL1865,Histone deacetylase 6 inhibitor
+Vorinostat,HDAC2,ChEMBL,mechanism,CHEMBL98,CHEMBL1937,Histone deacetylase 2 inhibitor

@@ -5,18 +5,31 @@
 
 suppressPackageStartupMessages(library(data.table))
 
-project_root <- Sys.getenv(
-  "DROMA_META_PROJECT_ROOT",
-  unset = "/Users/peng/Desktop/Project/DROMA/Meta_project/Meta_Example"
-)
-vis_input <- Sys.getenv(
-  "DROMA_META_VIS_INPUT",
-  unset = file.path(project_root, "Output", "visualization")
-)
-vis_output <- Sys.getenv(
-  "DROMA_META_VIS_ARTICLE_OUTPUT",
-  unset = file.path(project_root, "Output", "visualization2")
-)
+resolve_env_path <- function(...) {
+  candidates <- c(...)
+  for (name in candidates) {
+    value <- Sys.getenv(name, unset = NA_character_)
+    if (!is.na(value) && nzchar(value)) {
+      return(normalizePath(value, mustWork = FALSE))
+    }
+  }
+  NA_character_
+}
+
+project_root <- resolve_env_path("DROMA_META_PROJECT_ROOT")
+vis_input <- resolve_env_path("DROMA_META_VIS_INPUT", "DROMA_META_VIS_OUTPUT", "VIS_OUTPUT")
+vis_output <- resolve_env_path("VIS_ARTICLE_OUTPUT", "DROMA_META_VIS_ARTICLE_OUTPUT")
+
+if (is.na(vis_input)) {
+  if (!is.na(project_root)) {
+    vis_input <- file.path(project_root, "Output", "visualization")
+  } else {
+    stop("Set VIS_OUTPUT (or DROMA_META_VIS_INPUT) before running 20-Organize_Article_Figures.R", call. = FALSE)
+  }
+}
+if (is.na(vis_output)) {
+  vis_output <- file.path(dirname(vis_input), paste0(basename(vis_input), "2"))
+}
 
 if (!dir.exists(vis_input)) {
   stop("Visualization input directory does not exist: ", vis_input, call. = FALSE)

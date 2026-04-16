@@ -24,6 +24,19 @@ if (!file.exists(summary_path)) {
 final_biomarkers <- fread(final_path)
 summary_dt       <- fread(summary_path)
 
+count_rows_safe <- function(path) {
+  if (!file.exists(path)) return(NA_integer_)
+  nrow(fread(path, select = 1L))
+}
+
+if (!"n_selected_genes" %in% names(summary_dt) && "output_dir" %in% names(summary_dt)) {
+  summary_dt[, n_selected_genes := vapply(
+    file.path(output_dir, "selected_genes.csv"),
+    count_rows_safe,
+    integer(1)
+  )]
+}
+
 # 1) Direction distribution
 if (nrow(final_biomarkers) > 0 && "direction" %in% names(final_biomarkers)) {
   p_dir <- plotDirectionSummary(final_biomarkers)
@@ -36,14 +49,14 @@ if (nrow(final_biomarkers) > 0 && "direction" %in% names(final_biomarkers)) {
 }
 
 # 2) Dumbbell attrition chart
-if (nrow(summary_dt) > 0) {
+if (nrow(summary_dt) > 0 && all(c("n_selected_genes", "n_final_biomarkers") %in% names(summary_dt))) {
   p_stage <- plotStageCountComparison(summary_dt)
   saveMetaVisPdf(p_stage, file.path(vis_output, "stage_attrition_dumbbell.pdf"),
     width = 7.2, height = 4.5
   )
   cat("  OK stage_attrition_dumbbell.pdf\n")
 } else {
-  cat("  SKIP stage_attrition: no summary data\n")
+  cat("  SKIP stage_attrition: required stage-count columns not available\n")
 }
 
 cat("\nDone.\n")

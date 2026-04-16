@@ -21,7 +21,9 @@ Imports:
     ggrepel,
     ComplexHeatmap,
     circlize,
+    clusterProfiler,
     grid,
+    org.Hs.eg.db,
     rlang,
     stats
 Suggests:
@@ -39,4 +41,5 @@ Collate:
     'FuncVisSummary.R'
     'FuncVisTcgaAD.R'
     'FuncVisForest.R'
+    'FuncVisBreastSignature.R'
     'zzz.R'
