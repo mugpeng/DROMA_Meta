@@ -13,3 +13,4 @@ A zero-row data.frame with standard meta-analysis columns.
 Builds an empty result data frame with the expected columns used
 by downstream workflow helpers when a step yields no usable result.
 }
+\keyword{internal}

@@ -30,7 +30,7 @@ sanitizeName <- function(x) {
 #' @description Builds an empty result data frame with the expected columns used
 #' by downstream workflow helpers when a step yields no usable result.
 #' @return A zero-row data.frame with standard meta-analysis columns.
-#' @export
+#' @keywords internal
 createEmptyMetaDf <- function() {
   data.frame(
     name = character(0),
@@ -47,7 +47,7 @@ createEmptyMetaDf <- function() {
 #' @description Builds an empty result data frame for the final biomarker export
 #' so downstream scripts can still read headers when no biomarker survives.
 #' @return A zero-row data.frame with standard final-biomarker columns.
-#' @export
+#' @keywords internal
 createEmptyFinalBiomarkersDf <- function() {
   data.frame(
     name = character(0),

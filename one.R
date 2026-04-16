@@ -21,7 +21,26 @@ summary_csv <- file.path(output_base_batch, "meta_workflow_batch_summary.csv")
 # Batch-loop inputs. Edit these values in the script when you want to change
 # how the workflow is run.
 eligible_pairs <- data.table::fread(eligible_pairs_csv, data.table = TRUE)
-eligible_pairs <- unique(eligible_pairs[, .(drug, tumor_type)])
+eligible_pairs <- unique(eligible_pairs)
+if ("n_datasets_pdcpdx_invitro" %in% names(eligible_pairs)) {
+  eligible_pairs[
+    ,
+    pdcpdx_ge_2_pair := !is.na(n_datasets_pdcpdx_invitro) & n_datasets_pdcpdx_invitro >= 2
+  ]
+} else {
+  eligible_pairs[, pdcpdx_ge_2_pair := NA]
+}
+eligible_pair_flags <- eligible_pairs[
+  ,
+  .(
+    pdcpdx_ge_2_pair = {
+      values <- pdcpdx_ge_2_pair[!is.na(pdcpdx_ge_2_pair)]
+      if (length(values)) any(values) else NA
+    }
+  ),
+  by = .(drug, tumor_type)
+]
+eligible_pairs_run <- unique(eligible_pairs[, .(drug, tumor_type)])
 
 db_path <- defaults$droma_db_path
 # db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
@@ -57,8 +76,8 @@ clinical_P_t <- 0.05
 clinical_n_datasets_t <- NULL
 
 batch_results <- list()
-for (i in seq_len(nrow(eligible_pairs))) {
-  pair <- eligible_pairs[i]
+for (i in seq_len(nrow(eligible_pairs_run))) {
+  pair <- eligible_pairs_run[i]
 
   batch_results[[i]] <- runMetaWorkflow(
     drug = pair$drug[[1]],
@@ -89,5 +108,21 @@ for (i in seq_len(nrow(eligible_pairs))) {
 }
 
 summary_dt <- data.table::rbindlist(batch_results, fill = TRUE)
+summary_dt <- merge(
+  summary_dt,
+  eligible_pair_flags,
+  by = c("drug", "tumor_type"),
+  all.x = TRUE
+)
+data.table::setcolorder(
+  summary_dt,
+  c(
+    "drug",
+    "tumor_type",
+    "pdcpdx_ge_2_pair",
+    "ctrdb_status",
+    setdiff(names(summary_dt), c("drug", "tumor_type", "pdcpdx_ge_2_pair", "ctrdb_status"))
+  )
+)
 data.table::fwrite(summary_dt, summary_csv)
 print(summary_dt)

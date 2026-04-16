@@ -3,7 +3,6 @@
 export(batchFindTcgaADConcordantFeatures)
 export(buildDrugTumorGrid)
 export(calcFeatureADConcordance)
-export(createEmptyMetaDf)
 export(filterProjectsForDrugTumor)
 export(getMatchedTcgaTumorType)
 export(getMetaWorkflowDefaults)

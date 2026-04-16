@@ -13,3 +13,4 @@ A zero-row data.frame with standard final-biomarker columns.
 Builds an empty result data frame for the final biomarker export
 so downstream scripts can still read headers when no biomarker survives.
 }
+\keyword{internal}
