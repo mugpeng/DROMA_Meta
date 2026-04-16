@@ -7,7 +7,8 @@ suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(ComplexHeatmap))
 suppressPackageStartupMessages(library(DROMA.Meta))
 
-defaults   <- getVisWorkflowDefaults()
+project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+defaults   <- getVisWorkflowDefaults(project_root = project_root)
 output_base <- defaults$output_base
 vis_output <- defaults$vis_output
 upset_dir  <- file.path(vis_output, "upset")

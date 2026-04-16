@@ -31,17 +31,6 @@ plotStageUpset <- function(cell_sig_genes,
 
   combination_mat <- ComplexHeatmap::make_comb_mat(gene_sets)
 
-  # Highlight the triple-intersection if final_genes provided
-  comb_highlight <- NULL
-  if (!is.null(final_genes) && length(final_genes) > 0 && length(gene_sets) == 3) {
-    combo_names <- ComplexHeatmap::comb_name(combination_mat)
-    # Full intersection code: all three sets active = "111"
-    full_code <- paste0(rep("1", length(gene_sets)), collapse = "")
-    if (full_code %in% combo_names) {
-      comb_highlight <- full_code
-    }
-  }
-
   ev_colors <- getMetaVisColors("evidence")
   set_colors <- ev_colors[names(gene_sets)]
 

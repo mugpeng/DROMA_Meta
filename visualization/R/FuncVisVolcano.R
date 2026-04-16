@@ -104,13 +104,13 @@ plotMetaVolcano <- function(batch_df,
     ) +
     # Direction labels on sides
     ggplot2::annotate("text",
-      x = max(batch_df$effect_size, na.rm = TRUE) * 0.7,
+      x = max(batch_df$effect_size * 0.7, es_t * 2),
       y = y_max * 0.88,
       label = sprintf("%d up", n_up), hjust = 0.5, size = 3.2,
       color = dir_colors[["Up"]], fontface = "italic"
     ) +
     ggplot2::annotate("text",
-      x = min(batch_df$effect_size, na.rm = TRUE) * 0.7,
+      x = min(batch_df$effect_size * 0.7, -es_t * 2),
       y = y_max * 0.88,
       label = sprintf("%d down", n_down), hjust = 0.5, size = 3.2,
       color = dir_colors[["Down"]], fontface = "italic"

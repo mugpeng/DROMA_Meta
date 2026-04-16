@@ -34,7 +34,7 @@ plotTcgaAdPvalueHistogram <- function(ad_stats,
   n_concordant <- sum(ad_stats$concordant, na.rm = TRUE)
   n_total <- nrow(ad_stats)
 
-  ggplot2::ggplot(ad_stats, ggplot2::aes(x = get(p_col), fill = concordant)) +
+  ggplot2::ggplot(ad_stats, ggplot2::aes(x = .data[[p_col]], fill = concordant)) +
     ggplot2::geom_histogram(bins = 50, alpha = 0.85, color = "white", linewidth = 0.3) +
     ggplot2::geom_vline(xintercept = p_t, linetype = "dashed",
       color = "black", linewidth = 0.5
@@ -118,7 +118,7 @@ plotTcgaAdDensity <- function(ad_stats,
   plot_dt <- ad_stats[!is.na(get(stat_col))]
   plot_dt[, concordant := ifelse(get(conc_col), "Concordant", "Non-concordant")]
 
-  ggplot2::ggplot(plot_dt, ggplot2::aes(x = get(stat_col), fill = concordant)) +
+  ggplot2::ggplot(plot_dt, ggplot2::aes(x = .data[[stat_col]], fill = concordant)) +
     ggplot2::geom_density(alpha = 0.5) +
     ggplot2::scale_fill_manual(
       values = c("Concordant" = "#2CA02C", "Non-concordant" = "#D62728"),

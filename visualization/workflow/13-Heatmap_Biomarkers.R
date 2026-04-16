@@ -8,7 +8,8 @@ suppressPackageStartupMessages(library(ComplexHeatmap))
 suppressPackageStartupMessages(library(circlize))
 suppressPackageStartupMessages(library(DROMA.Meta))
 
-defaults   <- getVisWorkflowDefaults()
+project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+defaults   <- getVisWorkflowDefaults(project_root = project_root)
 vis_output <- defaults$vis_output
 dir.create(vis_output, showWarnings = FALSE, recursive = TRUE)
 

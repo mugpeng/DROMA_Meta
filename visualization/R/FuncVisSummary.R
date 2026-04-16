@@ -69,33 +69,50 @@ plotStageCountComparison <- function(summary_dt,
     end       = summary_dt$n_final_biomarkers,
     attrition = summary_dt$n_selected_genes - summary_dt$n_final_biomarkers
   )
-  dumb_dt[, pct_retained := sprintf("%.0f%%", end / start * 100)]
+  dumb_dt[, pct_retained := {
+    ifelse(start == 0, "N/A", sprintf("%.0f%%", end / start * 100))
+  }]
   dumb_dt <- dumb_dt[order(start), ]
   dumb_dt[, pair := factor(pair, levels = pair)]
 
   ev_colors <- getMetaVisColors("evidence")
 
-  ggplot2::ggplot(dumb_dt) +
+  # Build a long-format table for proper legend
+  legend_dt <- data.table::rbindlist(list(
+    data.table::data.table(pair = dumb_dt$pair, x = dumb_dt$start, Stage = "Preclinical intersection"),
+    data.table::data.table(pair = dumb_dt$pair, x = dumb_dt$end, Stage = "Final validated")
+  ))
+  legend_dt[, pair := factor(pair, levels = levels(dumb_dt$pair))]
+  legend_dt[, Stage := factor(Stage, levels = c("Preclinical intersection", "Final validated"))]
+
+  stage_colors <- c(
+    "Preclinical intersection" = ev_colors[["Cell line"]],
+    "Final validated" = ev_colors[["Clinical"]]
+  )
+
+  ggplot2::ggplot() +
     # Connecting segment
     ggplot2::geom_segment(
+      data = dumb_dt,
       ggplot2::aes(x = start, xend = end, y = pair, yend = pair),
       color = "grey60", linewidth = 1.2
     ) +
-    # Start point (intersection)
-    ggplot2::geom_point(ggplot2::aes(x = start, y = pair),
-      color = ev_colors[["Cell line"]], size = 4, shape = 21,
-      fill = ev_colors[["Cell line"]], stroke = 0.8
+    # Points with proper legend
+    ggplot2::geom_point(
+      data = legend_dt,
+      ggplot2::aes(x = x, y = pair, fill = Stage),
+      shape = 21, size = 4, stroke = 0.8, color = "grey30"
     ) +
-    # End point (final)
-    ggplot2::geom_point(ggplot2::aes(x = end, y = pair),
-      color = ev_colors[["Clinical"]], size = 4, shape = 21,
-      fill = ev_colors[["Clinical"]], stroke = 0.8
-    ) +
+    ggplot2::scale_fill_manual(values = stage_colors, name = NULL) +
     # Labels
-    ggplot2::geom_text(ggplot2::aes(x = start, y = pair, label = start),
+    ggplot2::geom_text(
+      data = dumb_dt,
+      ggplot2::aes(x = start, y = pair, label = start),
       hjust = 1.2, size = 3, color = "grey30"
     ) +
-    ggplot2::geom_text(ggplot2::aes(x = end, y = pair, label = paste0(end, " (", pct_retained, ")")),
+    ggplot2::geom_text(
+      data = dumb_dt,
+      ggplot2::aes(x = end, y = pair, label = paste0(end, " (", pct_retained, ")")),
       hjust = -0.2, size = 3, color = "grey30"
     ) +
     ggplot2::labs(
@@ -107,17 +124,5 @@ plotStageCountComparison <- function(summary_dt,
     ggplot2::theme(
       panel.grid.major.y = ggplot2::element_blank(),
       legend.position = "bottom"
-    ) +
-    # Manual legend
-    ggplot2::annotate("point",
-      x = c(-Inf, -Inf), y = c(Inf, Inf),
-      color = c(ev_colors[["Cell line"]], ev_colors[["Clinical"]]),
-      shape = 21, size = 3
-    ) +
-    ggplot2::guides(color = "none") +
-    ggplot2::annotate("text",
-      x = max(dumb_dt$start, na.rm = TRUE) * 0.6, y = -Inf,
-      label = "Start = Preclinical intersection    End = Final validated",
-      hjust = 0.5, vjust = -0.8, size = 3, color = "grey40", fontface = "italic"
     )
 }

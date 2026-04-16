@@ -104,7 +104,7 @@ plotBiomarkerHeatmap <- function(final_biomarkers,
       title_gp = grid::gpar(fontface = "bold", fontsize = 10),
       labels_gp = grid::gpar(fontsize = 9),
       direction = "horizontal",
-      legend_width = unit(4, "cm")
+      legend_width = grid::unit(4, "cm")
     )
   )
 }
