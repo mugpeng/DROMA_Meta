@@ -4,10 +4,10 @@
 # ============================================================================
 
 suppressPackageStartupMessages(library(data.table))
-suppressPackageStartupMessages(library(DROMA.Meta))
+suppressPackageStartupMessages(library(DROMA.Meta.visualization))
 
 # --- Configuration ---
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- getVisProjectRoot()
 defaults    <- getVisWorkflowDefaults(project_root = project_root)
 output_base <- defaults$output_base
 vis_output  <- defaults$vis_output

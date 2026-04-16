@@ -25,7 +25,7 @@ plotDirectionSummary <- function(final_biomarkers,
   count_dt[, total := sum(N), by = pair]
   count_dt[, pct := sprintf("%.0f%%", N / total * 100)]
 
-  ggplot2::ggplot(count_dt, ggplot2::aes(x = reorder(pair, total, sum), y = N, fill = direction)) +
+  ggplot2::ggplot(count_dt, ggplot2::aes(x = stats::reorder(pair, total, sum), y = N, fill = direction)) +
     ggplot2::geom_col(width = 0.65, alpha = 0.92) +
     ggplot2::geom_text(
       ggplot2::aes(label = paste0(N, " (", pct, ")")),

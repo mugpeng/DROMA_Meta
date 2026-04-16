@@ -6,9 +6,9 @@
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(patchwork))
-suppressPackageStartupMessages(library(DROMA.Meta))
+suppressPackageStartupMessages(library(DROMA.Meta.visualization))
 
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- getVisProjectRoot()
 defaults   <- getVisWorkflowDefaults(project_root = project_root)
 vis_output <- defaults$vis_output
 dir.create(vis_output, showWarnings = FALSE, recursive = TRUE)

@@ -45,7 +45,7 @@ plotBiomarkerHeatmap <- function(final_biomarkers,
   ha_top <- NULL
   if (!is.null(direction_col) && direction_col %in% names(final_biomarkers)) {
     dir_map <- final_biomarkers[, .(direction = unique(get(direction_col))), by = pair]
-    dir_vec <- setNames(dir_map$direction, dir_map$pair)
+    dir_vec <- stats::setNames(dir_map$direction, dir_map$pair)
     ha_top <- ComplexHeatmap::HeatmapAnnotation(
       Direction = dir_vec[colnames(mat)],
       col = list(Direction = dir_colors),

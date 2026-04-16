@@ -5,9 +5,9 @@
 
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(ComplexHeatmap))
-suppressPackageStartupMessages(library(DROMA.Meta))
+suppressPackageStartupMessages(library(DROMA.Meta.visualization))
 
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- getVisProjectRoot()
 defaults   <- getVisWorkflowDefaults(project_root = project_root)
 output_base <- defaults$output_base
 vis_output <- defaults$vis_output
@@ -26,7 +26,8 @@ for (drug_dir in drug_dirs) {
   for (pair_dir in tumor_dirs) {
     drug_name  <- basename(drug_dir)
     tumor_name <- basename(pair_dir)
-    slug <- paste0(sanitizeName(drug_name), "_", sanitizeName(tumor_name))
+    slug <- paste0(DROMA.Meta::sanitizeName(drug_name), "_",
+                   DROMA.Meta::sanitizeName(tumor_name))
 
     sig_cell   <- file.path(pair_dir, "mRNA_cell_sig.csv")
     sig_pdcpdx <- file.path(pair_dir, "mRNA_pdcpdx_sig.csv")

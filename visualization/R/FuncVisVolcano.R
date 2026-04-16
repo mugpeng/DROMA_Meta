@@ -54,7 +54,7 @@ plotMetaVolcano <- function(batch_df,
       batch_df$group != "NS" & batch_df$n_datasets >= n_datasets_t,
       batch_df$group, "NS"
     )
-  )
+  }
 
   # Summary text
   n_up   <- sum(batch_df$group == "Up", na.rm = TRUE)

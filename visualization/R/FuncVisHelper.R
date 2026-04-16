@@ -83,22 +83,63 @@ themeMetaPaper <- function(base_size = 11) {
 
 # Path Management ----
 
+#' Get Project Root for the Visualization Workflow
+#'
+#' @description Resolves the visualization project root. The
+#' \code{DROMA_META_PROJECT_ROOT} environment variable takes precedence; when it
+#' is not set, the default remains \code{file.path(getwd(), "Meta_Example")}.
+#' @param project_root Optional explicit project root.
+#' @param example_dir Default example directory under the current working
+#'   directory.
+#' @return A normalized project root path.
+#' @export
+getVisProjectRoot <- function(project_root = Sys.getenv("DROMA_META_PROJECT_ROOT", unset = NA_character_),
+                              example_dir = "Meta_Example") {
+  if (!is.na(project_root) && nzchar(project_root)) {
+    return(normalizePath(project_root, mustWork = FALSE))
+  }
+  file.path(normalizePath(getwd(), mustWork = TRUE), example_dir)
+}
+
 #' Get Default Paths for the Visualization Workflow
 #'
 #' @description Returns paths for visualization output, mirroring
-#' \code{getMetaWorkflowDefaults()} from the parent package.
+#' \code{getMetaWorkflowDefaults()} from the parent package. Runtime paths can
+#' be overridden through \code{DROMA_META_PROJECT_ROOT},
+#' \code{DROMA_META_OUTPUT_BASE}, \code{DROMA_META_VIS_OUTPUT},
+#' \code{DROMA_DB_PATH}, and \code{CTRDB_PATH}.
 #' @param project_root Root directory of the project.
+#' @param output_base Root output directory from the meta workflow.
+#' @param vis_output Directory for visualization tables and figures.
+#' @param droma_db_path DROMA SQLite database path.
+#' @param ctrdb_path CTRDB SQLite database path.
 #' @return A named list with \code{project_root}, \code{output_base},
 #'   \code{vis_output}, \code{droma_db_path}, and \code{ctrdb_path}.
 #' @export
-getVisWorkflowDefaults <- function(project_root = normalizePath(getwd(), mustWork = TRUE)) {
-  output_base <- file.path(project_root, "Output", "meta_batch")
+getVisWorkflowDefaults <- function(project_root = getVisProjectRoot(),
+                                   output_base = Sys.getenv("DROMA_META_OUTPUT_BASE", unset = NA_character_),
+                                   vis_output = Sys.getenv("DROMA_META_VIS_OUTPUT", unset = NA_character_),
+                                   droma_db_path = Sys.getenv("DROMA_DB_PATH", unset = NA_character_),
+                                   ctrdb_path = Sys.getenv("CTRDB_PATH", unset = NA_character_)) {
+  if (is.na(output_base) || !nzchar(output_base)) {
+    output_base <- file.path(project_root, "Output", "meta_batch")
+  }
+  if (is.na(vis_output) || !nzchar(vis_output)) {
+    vis_output <- file.path(project_root, "Output", "visualization")
+  }
+  if (is.na(droma_db_path) || !nzchar(droma_db_path)) {
+    droma_db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
+  }
+  if (is.na(ctrdb_path) || !nzchar(ctrdb_path)) {
+    ctrdb_path <- "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
+  }
+
   list(
     project_root  = project_root,
     output_base   = output_base,
-    vis_output    = file.path(project_root, "Output", "visualization"),
-    droma_db_path = "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite",
-    ctrdb_path    = "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
+    vis_output    = vis_output,
+    droma_db_path = droma_db_path,
+    ctrdb_path    = ctrdb_path
   )
 }
 
@@ -322,8 +363,8 @@ saveMetaVisPdf <- function(plot,
 saveComplexHeatmapPdf <- function(ht, filename,
                                   width = 7.2, height = 5.6) {
   dir.create(dirname(filename), showWarnings = FALSE, recursive = TRUE)
-  pdf(filename, width = width, height = height)
+  grDevices::pdf(filename, width = width, height = height)
   ComplexHeatmap::draw(ht)
-  dev.off()
+  grDevices::dev.off()
   invisible(filename)
 }

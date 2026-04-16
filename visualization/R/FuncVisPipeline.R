@@ -49,7 +49,7 @@ plotPipelineFunnel <- function(summary_dt,
 
   # Compute attrition percentage
   plot_dt[, pct := {
-    prev <- shift(count, type = "lag")
+    prev <- data.table::shift(count, type = "lag")
     ifelse(is.na(prev), NA_character_, sprintf("%.0f%%", count / prev * 100))
   }]
 
@@ -102,7 +102,7 @@ plotBiomarkerCountByPair <- function(final_biomarkers,
     count_dt <- final_biomarkers[, .N, by = .(pair, direction)]
     count_dt[, direction := factor(direction, levels = c("Up", "Down"))]
 
-    p <- ggplot2::ggplot(count_dt, ggplot2::aes(x = reorder(pair, N, sum), y = N, fill = direction)) +
+    p <- ggplot2::ggplot(count_dt, ggplot2::aes(x = stats::reorder(pair, N, sum), y = N, fill = direction)) +
       ggplot2::geom_col(width = 0.7) +
       ggplot2::geom_text(
         ggplot2::aes(label = N),
@@ -112,7 +112,7 @@ plotBiomarkerCountByPair <- function(final_biomarkers,
       ggplot2::scale_fill_manual(values = dir_colors, name = "Direction")
   } else {
     count_dt <- final_biomarkers[, .N, by = .(pair)]
-    p <- ggplot2::ggplot(count_dt, ggplot2::aes(x = reorder(pair, N), y = N)) +
+    p <- ggplot2::ggplot(count_dt, ggplot2::aes(x = stats::reorder(pair, N), y = N)) +
       ggplot2::geom_col(fill = "#5B9BD5", width = 0.7) +
       ggplot2::geom_text(ggplot2::aes(label = N), hjust = -0.2, size = 3.5)
   }
