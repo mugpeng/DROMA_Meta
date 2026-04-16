@@ -82,6 +82,70 @@ test_skip_existing_outputs <- function() {
   stopifnot(identical(result$n_final_biomarkers[[1]], 1L))
 }
 
+test_stage04_connects_droma_when_earlier_stages_are_skipped <- function() {
+  output_base <- local_tempdir("meta-output-")
+  output_dir <- getMetaWorkflowOutputDir("DrugA", "Tumor A", output_base)
+  dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "batch_cell_sets_mRNA.csv"))
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv"))
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "mRNA_cell_sig.csv"))
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "mRNA_pdcpdx_sig.csv"))
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "selected_genes.csv"))
+  fwrite(data.table(name = "GENE1", ccle_vs_tcga_concordant = TRUE), file.path(output_dir, "selected_genes_ad_stats.csv"))
+  fwrite(data.table(name = "GENE1", ccle_vs_tcga_concordant = TRUE), file.path(output_dir, "selected_genes_ad_filtered.csv"))
+
+  calls <- new.env(parent = emptyenv())
+  calls$connect_droma <- 0L
+
+  assign(
+    "connectDROMADatabase",
+    function(...) {
+      calls$connect_droma <- calls$connect_droma + 1L
+      textConnection("droma", open = "r")
+    },
+    envir = .GlobalEnv
+  )
+  assign("connectCTRDatabase", function(...) TRUE, envir = .GlobalEnv)
+  assign(
+    "batchFindClinicalSigResponse",
+    function(...) {
+      if (identical(calls$connect_droma, 0L)) {
+        stop("No database connection found. Connect first with connectDROMADatabase()", call. = FALSE)
+      }
+      data.frame(name = "GENE1", direction = "up", stringsAsFactors = FALSE)
+    },
+    envir = .GlobalEnv
+  )
+  assign("getSignificantFeatures", function(x, ...) as.data.table(x), envir = .GlobalEnv)
+  assign(
+    "getIntersectSignificantFeatures",
+    function(...) data.frame(name = "GENE1", direction = "up", stringsAsFactors = FALSE),
+    envir = .GlobalEnv
+  )
+
+  cleanup <- c(
+    "connectDROMADatabase",
+    "connectCTRDatabase",
+    "batchFindClinicalSigResponse",
+    "getSignificantFeatures",
+    "getIntersectSignificantFeatures"
+  )
+  on.exit(rm(list = cleanup, envir = .GlobalEnv), add = TRUE)
+
+  result <- runMetaWorkflow(
+    drug = "DrugA",
+    tumor_type = "Tumor A",
+    output_base = output_base,
+    override = FALSE,
+    verbose = FALSE
+  )
+
+  stopifnot(identical(result$status[[1]], "success"))
+  stopifnot(calls$connect_droma >= 1L)
+  stopifnot(identical(result$ctrdb_status[[1]], "tumor_type_matched"))
+}
+
 test_force_override_recomputes_outputs <- function() {
   output_base <- local_tempdir("meta-output-")
 
@@ -675,6 +739,91 @@ test_clinical_tumor_type_error_is_marked <- function() {
   stopifnot(identical(calls$clinical_tumor_types, "Tumor A"))
 }
 
+test_clinical_missing_tumor_type_error_falls_back_to_all <- function() {
+  output_base <- local_tempdir("meta-output-")
+
+  calls <- new.env(parent = emptyenv())
+  calls$clinical_tumor_types <- character(0)
+
+  assign("connectDROMADatabase", function(...) textConnection("droma", open = "r"), envir = .GlobalEnv)
+  assign(
+    "listDROMAProjects",
+    function(...) data.frame(
+      dataset_type = c("CellLine", "PDC", "PDO", "PDX", "Other"),
+      project_name = c("CELL", "PDC1", "PDO1", "PDX1", "CCLE"),
+      stringsAsFactors = FALSE
+    ),
+    envir = .GlobalEnv
+  )
+  assign(
+    "createMultiDromaSetFromAllProjects",
+    function(..., include_projects, con = NULL) {
+      structure(list(projects = include_projects), class = "MultiDromaSet")
+    },
+    envir = .GlobalEnv
+  )
+  assign("batchFindSignificantFeatures", function(...) data.table(name = "GENE1", direction = "up"), envir = .GlobalEnv)
+  assign("getSignificantFeatures", function(x, ...) as.data.table(x), envir = .GlobalEnv)
+  assign(
+    "getIntersectSignificantFeatures",
+    function(...) {
+      args <- list(...)
+      if (!is.null(args$cell) && !is.null(args$pdcpdx) && is.null(args$ctrdb)) {
+        return(data.table(name = "GENE1", direction_pdcpdx = "up"))
+      }
+      data.frame(name = "GENE1", direction_pdcpdx = "up", direction = "up", stringsAsFactors = FALSE)
+    },
+    envir = .GlobalEnv
+  )
+  assign(
+    "batchFindTcgaADConcordantFeatures",
+    function(selected_features, ...) {
+      out <- as.data.table(selected_features)
+      out[, ccle_vs_tcga_concordant := TRUE]
+      out
+    },
+    envir = .GlobalEnv
+  )
+  assign("connectCTRDatabase", function(...) TRUE, envir = .GlobalEnv)
+  assign(
+    "batchFindClinicalSigResponse",
+    function(..., tumor_type) {
+      calls$clinical_tumor_types <- c(calls$clinical_tumor_types, tumor_type)
+      if (!identical(tumor_type, "all")) {
+        stop("No samples found with tumor type: Tumor A", call. = FALSE)
+      }
+      data.frame(name = "GENE1", direction = "up", stringsAsFactors = FALSE)
+    },
+    envir = .GlobalEnv
+  )
+
+  cleanup <- c(
+    "connectDROMADatabase",
+    "listDROMAProjects",
+    "createMultiDromaSetFromAllProjects",
+    "batchFindSignificantFeatures",
+    "getSignificantFeatures",
+    "getIntersectSignificantFeatures",
+    "batchFindTcgaADConcordantFeatures",
+    "connectCTRDatabase",
+    "batchFindClinicalSigResponse"
+  )
+  on.exit(rm(list = cleanup, envir = .GlobalEnv), add = TRUE)
+
+  result <- runMetaWorkflow(
+    drug = "DrugA",
+    tumor_type = "Tumor A",
+    output_base = output_base,
+    override = TRUE,
+    verbose = FALSE
+  )
+
+  stopifnot(identical(result$status[[1]], "success"))
+  stopifnot(identical(result$ctrdb_status[[1]], "fallback_all"))
+  stopifnot(isTRUE(result$ctrdb_fallback[[1]]))
+  stopifnot(identical(calls$clinical_tumor_types, c("Tumor A", "all")))
+}
+
 test_clinical_all_error_is_marked <- function() {
   output_base <- local_tempdir("meta-output-")
 
@@ -762,12 +911,14 @@ test_clinical_all_error_is_marked <- function() {
 }
 
 test_skip_existing_outputs()
+test_stage04_connects_droma_when_earlier_stages_are_skipped()
 test_force_override_recomputes_outputs()
 test_stage03_filters_concordant_rows_without_get_lookup()
 test_batch_probe_failure_returns_failed_summary()
 test_batch_probe_is_silent()
 test_clinical_fallback_to_all_marks_outputs()
 test_clinical_missing_everywhere_returns_empty_outputs()
+test_clinical_missing_tumor_type_error_falls_back_to_all()
 test_clinical_tumor_type_error_is_marked()
 test_clinical_all_error_is_marked()
 

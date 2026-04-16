@@ -38,32 +38,53 @@ connectCTRDatabase(ctrdb_path)
 
 fetchClinicalBatch <- function(query_tumor_type) {
   tryCatch(
-    batchFindClinicalSigResponse(
-      select_omics = unique(selected_genes_ad_filtered$name),
-      select_drugs = drug,
-      data_type = data_type,
-      tumor_type = query_tumor_type,
-      cores = cores
+    list(
+      data = batchFindClinicalSigResponse(
+        select_omics = unique(selected_genes_ad_filtered$name),
+        select_drugs = drug,
+        data_type = data_type,
+        tumor_type = query_tumor_type,
+        cores = cores
+      ),
+      error_message = NULL
     ),
     error = function(e) {
-      createEmptyMetaDf()
+      list(
+        data = createEmptyMetaDf(),
+        error_message = conditionMessage(e)
+      )
     }
   )
 }
 
-clinical_batch <- fetchClinicalBatch(tumor_type)
+isTumorTypeMissingError <- function(error_message) {
+  is.character(error_message) &&
+    length(error_message) == 1L &&
+    grepl("^No samples found with tumor type:", error_message)
+}
+
+clinical_fetch <- fetchClinicalBatch(tumor_type)
+clinical_batch <- clinical_fetch$data
 ctrdb_status <- "tumor_type_matched"
 ctrdb_fallback <- FALSE
 clinical_query_tumor_type <- tumor_type
 
-if (nrow(clinical_batch) == 0L) {
-  clinical_batch <- fetchClinicalBatch("all")
-  clinical_query_tumor_type <- "all"
+if (!is.null(clinical_fetch$error_message) &&
+    !isTumorTypeMissingError(clinical_fetch$error_message)) {
+  ctrdb_status <- "tumor_type_error"
+} else if (!is.null(clinical_fetch$error_message) || nrow(clinical_batch) == 0L) {
+  clinical_fetch <- fetchClinicalBatch("all")
+  clinical_batch <- clinical_fetch$data
 
-  if (nrow(clinical_batch) > 0L) {
+  if (!is.null(clinical_fetch$error_message)) {
+    ctrdb_status <- "all_error"
+    ctrdb_fallback <- FALSE
+  } else if (nrow(clinical_batch) > 0L) {
+    clinical_query_tumor_type <- "all"
     ctrdb_status <- "fallback_all"
     ctrdb_fallback <- TRUE
   } else {
+    clinical_query_tumor_type <- "all"
     ctrdb_status <- "no_ctrdb_data"
     ctrdb_fallback <- FALSE
   }

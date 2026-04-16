@@ -470,6 +470,7 @@ runMetaWorkflow <- function(drug,
         ctrdb_status <- fallbackIfMissing(clinical_info$ctrdb_status[[1]], NA_character_)
         ctrdb_fallback <- fallbackIfMissing(clinical_info$ctrdb_fallback[[1]], NA)
       } else {
+        getCon()
         connectCTRDatabase(ctrdb_path)
 
         fetchClinicalBatch <- function(query_tumor_type) {
@@ -493,15 +494,22 @@ runMetaWorkflow <- function(drug,
           )
         }
 
+        isTumorTypeMissingError <- function(error_message) {
+          is.character(error_message) &&
+            length(error_message) == 1L &&
+            grepl("^No samples found with tumor type:", error_message)
+        }
+
         clinical_fetch <- fetchClinicalBatch(tumor_type)
         clinical_batch <- clinical_fetch$data
         ctrdb_status <- "tumor_type_matched"
         ctrdb_fallback <- FALSE
         clinical_query_tumor_type <- tumor_type
 
-        if (!is.null(clinical_fetch$error_message)) {
+        if (!is.null(clinical_fetch$error_message) &&
+            !isTumorTypeMissingError(clinical_fetch$error_message)) {
           ctrdb_status <- "tumor_type_error"
-        } else if (nrow(clinical_batch) == 0L) {
+        } else if (!is.null(clinical_fetch$error_message) || nrow(clinical_batch) == 0L) {
           clinical_fetch <- fetchClinicalBatch("all")
           clinical_batch <- clinical_fetch$data
 

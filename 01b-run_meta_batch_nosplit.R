@@ -60,15 +60,15 @@ eligible_pairs_run <- unique(eligible_pairs[, .(drug, tumor_type)])
 # Run all eligible pairs directly without splitting ----
 eligible_pairs_run <- eligible_pairs_run[order(drug, tumor_type)]
 
-# db_path <- defaults$droma_db_path
-# ctrdb_path <- defaults$ctrdb_path
-# tcga_rna_counts_dir <- defaults$tcga_rna_counts_dir
-# gene_probe_map_path <- defaults$gene_probe_map_path
+db_path <- defaults$droma_db_path
+ctrdb_path <- defaults$ctrdb_path
+tcga_rna_counts_dir <- defaults$tcga_rna_counts_dir
+gene_probe_map_path <- defaults$gene_probe_map_path
 
-db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
-ctrdb_path <- "/home/data/denglab/bigData/DROMA/ctrdb.sqlite"
-tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
-gene_probe_map_path <- "/home/data/denglab/bigData/DROMA/gencode.human.v49.annotation.gene.probeMap"
+# db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
+# ctrdb_path <- "/home/data/denglab/bigData/DROMA/ctrdb.sqlite"
+# tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
+# gene_probe_map_path <- "/home/data/denglab/bigData/DROMA/gencode.human.v49.annotation.gene.probeMap"
 
 output_base <- defaults$output_base
 
@@ -93,6 +93,7 @@ clinical_es_t <- 0.1
 clinical_P_t <- 0.1
 clinical_n_datasets_t <- NULL
 
+# i = 2
 batch_results <- list()
 for (i in seq_len(nrow(eligible_pairs_run))) {
   pair <- eligible_pairs_run[i]
