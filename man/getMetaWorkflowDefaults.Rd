@@ -17,5 +17,5 @@ A named list of default paths.
 \description{
 Returns package-level default paths for database files and the
 workflow output directory. Batch input CSV paths are intentionally excluded
-and should be configured by driver scripts such as `one.R`.
+and should be configured by driver scripts such as `01-run_meta_batch.R`.
 }

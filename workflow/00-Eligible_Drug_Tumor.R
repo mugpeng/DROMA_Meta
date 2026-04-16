@@ -9,7 +9,8 @@ library(DROMA.Set)
 library(DROMA.R)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
+# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 output_base <- defaults$output_base
 dir.create(output_base, showWarnings = FALSE, recursive = TRUE)

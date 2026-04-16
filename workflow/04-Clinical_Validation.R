@@ -9,6 +9,8 @@ library(DROMA.Set)
 library(DROMA.R)
 
 ctrdb_path <- "/Users/peng/Desktop/Project/DROMA/Data/ctrdb.sqlite"
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
+defaults <- getMetaWorkflowDefaults(project_root = project_root)
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
 data_type <- "all"
@@ -18,7 +20,7 @@ clinical_es_t <- 0.1
 clinical_P_t <- 0.05
 clinical_n_datasets_t <- NULL
 
-output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
+output_base <- defaults$output_base
 tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)

@@ -51,7 +51,7 @@ data layer     analysis     workflow application layer
   - `gene_probe_map_path`
   - threshold settings for each workflow step
 - Supports script-level looping over drug and tumor-type combinations through
-  [one.R](one.R).
+  [01-run_meta_batch.R](01-run_meta_batch.R).
 
 ## Core Entry Points
 
@@ -84,7 +84,7 @@ workflow output directory. When `override = FALSE`, existing stage outputs under
 
 ### Driver Script
 
-[one.R](one.R) is the application driver script.
+[01-run_meta_batch.R](01-run_meta_batch.R) is the application driver script.
 
 It is responsible for:
 
@@ -161,11 +161,11 @@ print(result)
 
 ### 4. Batch Run by Script-Level Looping
 
-Use [one.R](one.R) as the application script.  
+Use [01-run_meta_batch.R](01-run_meta_batch.R) as the application script.  
 Edit the runtime parameters in that file, then run:
 
 ```r
-Rscript one.R
+Rscript 01-run_meta_batch.R
 ```
 
 ## Repository Structure
@@ -182,7 +182,7 @@ workflow/
   02-Select_Preclinical.R
   03-TCGA_AD_Filter.R
   04-Clinical_Validation.R
-one.R
+01-run_meta_batch.R
 DESCRIPTION
 NAMESPACE
 ```

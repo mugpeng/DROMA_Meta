@@ -8,9 +8,11 @@ suppressPackageStartupMessages(library(DROMA.Meta))
 library(DROMA.Set)
 library(DROMA.R)
 
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
+defaults <- getMetaWorkflowDefaults(project_root = project_root)
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
-output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
+output_base <- defaults$output_base
 tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)

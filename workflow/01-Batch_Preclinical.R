@@ -9,6 +9,8 @@ library(DROMA.Set)
 library(DROMA.R)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
+defaults <- getMetaWorkflowDefaults(project_root = project_root)
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
 feature2_type <- "mRNA"
@@ -18,7 +20,7 @@ cores <- 3
 cell_min_intersected_cells <- 20
 pdcpdx_min_intersected_cells <- 8
 
-output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
+output_base <- defaults$output_base
 tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)

@@ -4,19 +4,19 @@ suppressPackageStartupMessages(library(DROMA.R))
 
 cmd_args <- commandArgs(trailingOnly = FALSE)
 file_arg <- grep("^--file=", cmd_args, value = TRUE)
-# script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "two_bk.R"
-script_dir <- dirname(normalizePath("DROMA_Meta/two_bk.R", mustWork = TRUE))
-# project_root <- normalizePath(file.path(script_dir, "..", "Meta_Example"), mustWork = TRUE)
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+# script_path <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else "02-annotate_meta_batch.R"
+script_dir <- dirname(normalizePath("DROMA_Meta/02-annotate_meta_batch.R", mustWork = TRUE))
+# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
 
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
-# Driver-level input and output locations. This backup driver can annotate a
+# Driver-level input and output locations. This driver can annotate a
 # meta_batch directory even when meta_workflow_batch_summary.csv was not written.
 eligible_pairs_csv <- file.path(defaults$output_base, "eligible_drug_tumor_pairs.csv")
 output_base_batch <- file.path(defaults$output_base, "meta_batch")
 summary_csv <- file.path(output_base_batch, "meta_workflow_batch_summary.csv")
-annotation_summary_csv <- file.path(output_base_batch, "pair_biomarker_annotation_summary_bk.csv")
+annotation_summary_csv <- file.path(output_base_batch, "pair_biomarker_annotation_summary.csv")
 
 # Batch-annotation parameters. Edit these values in the script when you want to
 # change how the annotation summary is built.
@@ -210,7 +210,7 @@ pdcpdx_ge_2_n_datasets_t <- 2
   print(annotation_dt)
 }
 
-# 03: Write backup annotation summary ----
+# 03: Write annotation summary ----
 {
   data.table::fwrite(annotation_dt, annotation_summary_csv)
   print(

@@ -9,6 +9,8 @@ library(DROMA.Set)
 library(DROMA.R)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
+project_root <- normalizePath(file.path(getwd(), "..", "Meta_Example"), mustWork = TRUE)
+defaults <- getMetaWorkflowDefaults(project_root = project_root)
 drug <- "Paclitaxel"
 tumor_type <- "breast cancer"
 feature2_type <- "mRNA"
@@ -18,7 +20,7 @@ tcga_ad_p_t <- 0.01
 tcga_rna_counts_dir <- "/Users/peng/Library/CloudStorage/OneDrive-Personal/28PHD_peng/250301-DROMA_project/archive260314/251112-DROMA_align/benchmark_mini/Input/TCGA/rna_counts"
 gene_probe_map_path <- "/Users/peng/Desktop/Project/DROMA/Data/gencode.human.v49.annotation.gene.probeMap"
 
-output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
+output_base <- defaults$output_base
 tumor_type_slug <- sanitizeName(tumor_type)
 output_dir <- file.path(output_base, drug, tumor_type_slug)
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
