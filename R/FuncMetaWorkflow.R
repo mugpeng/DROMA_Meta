@@ -486,9 +486,9 @@ runMetaWorkflow <- function(drug,
 
         if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
           final_biomarkers <- getIntersectSignificantFeatures(
-            pdcpdx = as.data.frame(selected_genes_ad_filtered),
+            invitro = as.data.frame(selected_genes_ad_filtered),
             ctrdb = as.data.frame(clinical_sig),
-            direction_cols = c(pdcpdx = "direction_pdcpdx", ctrdb = "direction")
+            direction_cols = c(invitro = "direction_pdcpdx", ctrdb = "direction")
           )
 
           if (nrow(final_biomarkers) > 0) {
