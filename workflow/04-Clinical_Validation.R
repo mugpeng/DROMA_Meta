@@ -69,6 +69,10 @@ if (nrow(clinical_batch) == 0L) {
   }
 }
 
+if (ncol(clinical_batch) == 0L) {
+  clinical_batch <- createEmptyMetaDf()
+}
+
 if (nrow(clinical_batch) > 0) {
   clinical_sig <- getSignificantFeatures(
     clinical_batch,
@@ -118,13 +122,16 @@ clinical_info <- data.table::data.table(
   ctrdb_status = ctrdb_status,
   ctrdb_fallback = ctrdb_fallback,
   clinical_query_tumor_type = clinical_query_tumor_type,
+  n_clinical_batch = nrow(clinical_batch),
   n_clinical_sig = nrow(clinical_sig),
   n_final_biomarkers = nrow(final_biomarkers)
 )
 
+fwrite(clinical_batch, file.path(output_dir, "clinical_batch.csv"))
 fwrite(clinical_sig, file.path(output_dir, "clinical_sig_mRNA.csv"))
 fwrite(final_biomarkers, file.path(output_dir, "final_biomarkers.csv"))
 fwrite(clinical_info, clinical_info_path)
 
+cat(sprintf("  OK clinical_batch: %d biomarkers\n", nrow(clinical_batch)))
 cat(sprintf("  OK clinical_sig: %d biomarkers\n", nrow(clinical_sig)))
 cat(sprintf("  OK final_biomarkers: %d biomarkers\n", nrow(final_biomarkers)))

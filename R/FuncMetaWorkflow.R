@@ -183,6 +183,7 @@ runMetaWorkflow <- function(drug,
   ad_stats_path <- file.path(output_dir, "selected_genes_ad_stats.csv")
   ad_filtered_path <- file.path(output_dir, "selected_genes_ad_filtered.csv")
   clinical_sig_path <- file.path(output_dir, "clinical_sig_mRNA.csv")
+  clinical_batch_path <- file.path(output_dir, "clinical_batch.csv")
   final_biomarkers_path <- file.path(output_dir, "final_biomarkers.csv")
   clinical_info_path <- file.path(output_dir, "clinical_validation_info.csv")
 
@@ -460,9 +461,10 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 04: Clinical Validation ===\n")
       }
 
-      if (!override && stageFilesExist(clinical_sig_path, final_biomarkers_path, clinical_info_path)) {
-        notifyStageSkipped("stage 04", c(clinical_sig_path, final_biomarkers_path, clinical_info_path))
+      if (!override && stageFilesExist(clinical_sig_path, clinical_batch_path, final_biomarkers_path, clinical_info_path)) {
+        notifyStageSkipped("stage 04", c(clinical_sig_path, clinical_batch_path, final_biomarkers_path, clinical_info_path))
         clinical_sig <- readWorkflowCsv(clinical_sig_path)
+        clinical_batch <- readWorkflowCsv(clinical_batch_path)
         final_biomarkers <- readWorkflowCsv(final_biomarkers_path)
         clinical_info <- readWorkflowCsv(clinical_info_path)
         ctrdb_status <- fallbackIfMissing(clinical_info$ctrdb_status[[1]], NA_character_)
@@ -517,6 +519,10 @@ runMetaWorkflow <- function(drug,
           }
         }
 
+        if (ncol(clinical_batch) == 0L) {
+          clinical_batch <- createEmptyMetaDf()
+        }
+
         if (nrow(clinical_batch) > 0) {
           clinical_sig <- getSignificantFeatures(
             clinical_batch,
@@ -564,16 +570,19 @@ runMetaWorkflow <- function(drug,
           ctrdb_status = ctrdb_status,
           ctrdb_fallback = ctrdb_fallback,
           clinical_query_tumor_type = clinical_query_tumor_type,
+          n_clinical_batch = nrow(clinical_batch),
           n_clinical_sig = nrow(clinical_sig),
           n_final_biomarkers = nrow(final_biomarkers)
         )
 
+        data.table::fwrite(clinical_batch, clinical_batch_path)
         data.table::fwrite(clinical_sig, clinical_sig_path)
         data.table::fwrite(final_biomarkers, final_biomarkers_path)
         data.table::fwrite(clinical_info, clinical_info_path)
       }
 
       if (verbose) {
+        cat(sprintf("  OK clinical_batch: %d biomarkers\n", nrow(clinical_batch)))
         cat(sprintf("  OK clinical_sig: %d biomarkers\n", nrow(clinical_sig)))
         cat(sprintf("  OK final_biomarkers: %d biomarkers\n", nrow(final_biomarkers)))
       }

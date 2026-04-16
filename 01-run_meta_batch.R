@@ -11,7 +11,7 @@ defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
 # Driver-level input and output locations. Keep these runtime choices here so
 # the files under R/ remain reusable pure function definitions.
-eligible_pairs_csv <- file.path(defaults$output_base, "eligible_drug_tumor_pairs.csv")
+eligible_pairs_csv <- file.path(defaults$output_base, "Meta_Example/Output/eligible_drug_tumor_pairs_ctrdb.csv")
 
 output_base_batch <- file.path(defaults$output_base, "meta_batch")
 dir.create(output_base_batch, recursive = TRUE, showWarnings = FALSE)
@@ -21,6 +21,21 @@ summary_csv <- file.path(output_base_batch, "meta_workflow_batch_summary.csv")
 # Batch-loop inputs. Edit these values in the script when you want to change
 # how the workflow is run.
 eligible_pairs <- data.table::fread(eligible_pairs_csv, data.table = TRUE)
+
+# suppressPackageStartupMessages(library(DROMA.Meta.visualization))
+# project_root <- "/Users/peng/Desktop/Project/DROMA/Meta_project/Meta_Example"
+# defaults   <- getVisWorkflowDefaults(project_root = project_root)
+# vis_output <- defaults$vis_output
+# summary_path <- file.path(vis_output, "collected_summary.csv")
+# summary_dt      <- fread(summary_path)
+# eligible_pairs_bk <- eligible_pairs
+# summary_dt$pair <- paste0(summary_dt$drug, "_", summary_dt$tumor_type)
+# eligible_pairs$pair <- paste0(eligible_pairs$drug, "_", eligible_pairs$tumor_type)
+# eligible_pairs[, pair := gsub("([a-zA-Z0-9'-]+_)([a-z]+) ([a-z]+)$", "\\1\\2_\\3", pair)]
+# eligible_pairs <- eligible_pairs[eligible_pairs$pair %in% summary_dt$pair,]
+# defaults <- getMetaWorkflowDefaults(project_root = project_root)
+
+eligible_pairs
 eligible_pairs <- unique(eligible_pairs)
 if ("n_datasets_pdcpdx_invitro" %in% names(eligible_pairs)) {
   eligible_pairs[
@@ -70,23 +85,23 @@ output_base <- defaults$output_base
 
 feature2_type <- "mRNA"
 data_type <- "all"
-cores <- 8
+cores <- 3
 
 cell_min_intersected_cells <- 10
 pdcpdx_min_intersected_cells <- 5
 
 cell_es_t <- 0.1
-cell_P_t <- 0.05
+cell_P_t <- 0.1
 cell_n_datasets_t <- 3
 
 pdcpdx_es_t <- 0.1
-pdcpdx_P_t <- 0.05
+pdcpdx_P_t <- 0.1
 pdcpdx_n_datasets_t <- 1
 
 tcga_ad_p_t <- 0.01
 
 clinical_es_t <- 0.1
-clinical_P_t <- 0.05
+clinical_P_t <- 0.1
 clinical_n_datasets_t <- NULL
 
 batch_part_1_rds <- file.path(output_base_batch, "meta_workflow_batch_part_1.rds")

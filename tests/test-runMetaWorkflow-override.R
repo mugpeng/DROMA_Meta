@@ -32,6 +32,7 @@ test_skip_existing_outputs <- function() {
   fwrite(data.table(name = "GENE1", ccle_vs_tcga_concordant = TRUE), file.path(output_dir, "selected_genes_ad_stats.csv"))
   fwrite(data.table(name = "GENE1", ccle_vs_tcga_concordant = TRUE), file.path(output_dir, "selected_genes_ad_filtered.csv"))
   fwrite(data.table(name = "GENE1"), file.path(output_dir, "clinical_sig_mRNA.csv"))
+  fwrite(data.table(name = "GENE1"), file.path(output_dir, "clinical_batch.csv"))
   fwrite(data.table(name = "GENE1"), file.path(output_dir, "final_biomarkers.csv"))
   fwrite(
     data.table(
@@ -40,6 +41,7 @@ test_skip_existing_outputs <- function() {
       ctrdb_status = "tumor_type_matched",
       ctrdb_fallback = FALSE,
       clinical_query_tumor_type = "Tumor A",
+      n_clinical_batch = 1L,
       n_clinical_sig = 1L,
       n_final_biomarkers = 1L
     ),
@@ -581,8 +583,10 @@ test_clinical_missing_everywhere_returns_empty_outputs <- function() {
 
   output_dir <- getMetaWorkflowOutputDir("DrugA", "Tumor A", output_base)
   clinical_sig <- fread(file.path(output_dir, "clinical_sig_mRNA.csv"))
+  clinical_batch <- fread(file.path(output_dir, "clinical_batch.csv"))
   final_biomarkers <- fread(file.path(output_dir, "final_biomarkers.csv"))
   stopifnot(nrow(clinical_sig) == 0L)
+  stopifnot(nrow(clinical_batch) == 0L)
   stopifnot(nrow(final_biomarkers) == 0L)
   stopifnot("ctrdb_status" %in% names(final_biomarkers))
   stopifnot("ctrdb_fallback" %in% names(final_biomarkers))
