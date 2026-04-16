@@ -1,0 +1,40 @@
+Package: DROMA.Meta.visualization
+Title: Publication-Quality Visualization for DROMA.Meta Workflow Results
+Version: 0.1.0
+Date: 2026-04-16
+Authors@R:
+    person("Peng Yu", "Zhong", email = "yc47680@um.edu.mo", role = c("aut", "cre"))
+Description: Provides publication-ready visualization functions for the
+    DROMA.Meta biomarker discovery pipeline. Generates volcano plots,
+    effect-size heatmaps, preclinical-clinical concordance scatter plots,
+    upset intersection diagrams, pipeline funnel summaries, and forest
+    plots from the multi-stage meta-analysis workflow output.
+License: MPL-2.0 + file LICENSE
+Depends:
+    R (>= 4.0.0),
+    DROMA.Meta
+Imports:
+    data.table,
+    ggplot2,
+    ggrepel,
+    patchwork,
+    ComplexHeatmap,
+    circlize,
+    grid,
+    ggsci,
+    stats
+Suggests:
+    kSamples
+Encoding: UTF-8
+LazyData: false
+RoxygenNote: 7.3.3
+Collate:
+    'FuncVisHelper.R'
+    'FuncVisPipeline.R'
+    'FuncVisVolcano.R'
+    'FuncVisHeatmap.R'
+    'FuncVisConcordance.R'
+    'FuncVisUpset.R'
+    'FuncVisSummary.R'
+    'FuncVisTcgaAD.R'
+    'FuncVisForest.R'
