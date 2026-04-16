@@ -5,8 +5,8 @@ suppressPackageStartupMessages(library(DROMA.Meta))
 suppressPackageStartupMessages(library(DROMA.Set))
 suppressPackageStartupMessages(library(DROMA.R))
 
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
-# project_root <- normalizePath(getwd(), mustWork = TRUE)
+# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- normalizePath(getwd(), mustWork = TRUE)
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
 # Driver-level input and output locations. Keep these runtime choices here so

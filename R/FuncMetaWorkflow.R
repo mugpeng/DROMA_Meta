@@ -253,6 +253,16 @@ runMetaWorkflow <- function(drug,
         cell_sets <- NULL
         pdcpdx_sets <- NULL
 
+        captureProbeSilently <- function(expr) {
+          capture.output(
+            capture.output(
+              expr,
+              type = "message"
+            ),
+            type = "output"
+          )
+        }
+
         if (!cell_batch_cached) {
           cell_names_all <- project_anno[
             project_anno$dataset_type %in% c("CellLine", "PDC"),
@@ -265,7 +275,7 @@ runMetaWorkflow <- function(drug,
           )
 
           tryCatch(
-            capture.output(
+            captureProbeSilently(
               batchFindSignificantFeatures(
                 cell_sets,
                 feature1_type = "drug",
@@ -277,8 +287,7 @@ runMetaWorkflow <- function(drug,
                 cores = cores,
                 min_intersected_cells = cell_min_intersected_cells,
                 test_top_n = 5
-              ),
-              type = "output"
+              )
             ),
             error = function(e) {
               stop(
@@ -304,7 +313,7 @@ runMetaWorkflow <- function(drug,
           )
 
           tryCatch(
-            capture.output(
+            captureProbeSilently(
               batchFindSignificantFeatures(
                 pdcpdx_sets,
                 feature1_type = "drug",
@@ -316,8 +325,7 @@ runMetaWorkflow <- function(drug,
                 cores = cores,
                 min_intersected_cells = pdcpdx_min_intersected_cells,
                 test_top_n = 5
-              ),
-              type = "output"
+              )
             ),
             error = function(e) {
               stop(

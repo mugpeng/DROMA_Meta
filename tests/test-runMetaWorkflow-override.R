@@ -313,6 +313,98 @@ test_batch_probe_failure_returns_failed_summary <- function() {
   stopifnot(identical(calls$full, 0L))
 }
 
+test_batch_probe_is_silent <- function() {
+  output_base <- local_tempdir("meta-output-")
+
+  assign("connectDROMADatabase", function(...) textConnection("droma", open = "r"), envir = .GlobalEnv)
+  assign(
+    "listDROMAProjects",
+    function(...) data.frame(
+      dataset_type = c("CellLine", "PDC", "PDO", "PDX", "Other"),
+      project_name = c("CELL", "PDC1", "PDO1", "PDX1", "CCLE"),
+      stringsAsFactors = FALSE
+    ),
+    envir = .GlobalEnv
+  )
+  assign(
+    "createMultiDromaSetFromAllProjects",
+    function(..., include_projects, con = NULL) {
+      structure(list(projects = include_projects), class = "MultiDromaSet")
+    },
+    envir = .GlobalEnv
+  )
+  assign(
+    "batchFindSignificantFeatures",
+    function(..., test_top_n = NULL) {
+      if (!is.null(test_top_n)) {
+        cat("Analysis completed in 1 seconds\n")
+        message("Found 0 significant associations out of 5 valid features.")
+        return(data.table(name = "GENE1", direction = "up"))
+      }
+      data.table(name = "GENE1", direction = "up")
+    },
+    envir = .GlobalEnv
+  )
+  assign("getSignificantFeatures", function(x, ...) as.data.table(x), envir = .GlobalEnv)
+  assign(
+    "getIntersectSignificantFeatures",
+    function(...) {
+      args <- list(...)
+      if (!is.null(args$cell) && !is.null(args$pdcpdx) && is.null(args$ctrdb)) {
+        return(data.table(name = "GENE1", direction_pdcpdx = "up"))
+      }
+      data.frame(name = "GENE1", direction_pdcpdx = "up", direction = "up", stringsAsFactors = FALSE)
+    },
+    envir = .GlobalEnv
+  )
+  assign(
+    "batchFindTcgaADConcordantFeatures",
+    function(selected_features, ...) {
+      out <- as.data.table(selected_features)
+      out[, ccle_vs_tcga_concordant := TRUE]
+      out
+    },
+    envir = .GlobalEnv
+  )
+  assign("connectCTRDatabase", function(...) TRUE, envir = .GlobalEnv)
+  assign(
+    "batchFindClinicalSigResponse",
+    function(...) data.frame(name = "GENE1", direction = "up", stringsAsFactors = FALSE),
+    envir = .GlobalEnv
+  )
+
+  cleanup <- c(
+    "connectDROMADatabase",
+    "listDROMAProjects",
+    "createMultiDromaSetFromAllProjects",
+    "batchFindSignificantFeatures",
+    "getSignificantFeatures",
+    "getIntersectSignificantFeatures",
+    "batchFindTcgaADConcordantFeatures",
+    "connectCTRDatabase",
+    "batchFindClinicalSigResponse"
+  )
+  on.exit(rm(list = cleanup, envir = .GlobalEnv), add = TRUE)
+
+  leaked_output <- capture.output(
+    leaked_messages <- capture.output(
+      result <- runMetaWorkflow(
+        drug = "DrugA",
+        tumor_type = "Tumor A",
+        output_base = output_base,
+        override = TRUE,
+        verbose = FALSE
+      ),
+      type = "message"
+    ),
+    type = "output"
+  )
+
+  stopifnot(identical(result$status[[1]], "success"))
+  stopifnot(length(leaked_output) == 0L)
+  stopifnot(length(leaked_messages) == 0L)
+}
+
 test_clinical_fallback_to_all_marks_outputs <- function() {
   output_base <- local_tempdir("meta-output-")
 
@@ -500,6 +592,7 @@ test_skip_existing_outputs()
 test_force_override_recomputes_outputs()
 test_stage03_filters_concordant_rows_without_get_lookup()
 test_batch_probe_failure_returns_failed_summary()
+test_batch_probe_is_silent()
 test_clinical_fallback_to_all_marks_outputs()
 test_clinical_missing_everywhere_returns_empty_outputs()
 
