@@ -89,6 +89,30 @@ buildDrugTumorGrid <- function(valid_drugs_csv, valid_tumor_types_csv) {
   )
 }
 
+#' Write a table with `data.table::fwrite` only if it has rows
+#'
+#' @description If `x` has zero rows, does not write and calls [stop()] so the
+#' caller exits with an error. Use for workflow exports where empty outputs are
+#' invalid.
+#' @param x Object accepted by [data.table::fwrite()] (e.g. `data.frame`,
+#'   `data.table`).
+#' @param file Output path passed to [data.table::fwrite()].
+#' @param label Short name for the error message (defaults to `basename(file)`).
+#' @param ... Further arguments forwarded to [data.table::fwrite()].
+#' @return `file`, invisibly.
+#' @keywords internal
+fwriteNonEmptyOrStop <- function(x, file, label = basename(file), ...) {
+  n <- NROW(x)
+  if (n == 0L) {
+    stop(
+      sprintf("Refusing to write empty table (%s) to %s", label, file),
+      call. = FALSE
+    )
+  }
+  data.table::fwrite(x, file, ...)
+  invisible(file)
+}
+
 #' Run the Full Meta Workflow for One Drug and Tumor Type
 #'
 #' @description Executes the four workflow stages for a single `drug` and
@@ -318,7 +342,7 @@ runMetaWorkflow <- function(drug,
             cores = cores,
             min_intersected_cells = cell_min_intersected_cells
           )
-          data.table::fwrite(batch_cell, batch_cell_path)
+          fwriteNonEmptyOrStop(batch_cell, batch_cell_path, "batch_cell")
         } else {
           notifyStageSkipped("stage 01", batch_cell_path)
           batch_cell <- readWorkflowCsv(batch_cell_path)
@@ -336,7 +360,7 @@ runMetaWorkflow <- function(drug,
             cores = cores,
             min_intersected_cells = pdcpdx_min_intersected_cells
           )
-          data.table::fwrite(batch_pdcpdx, batch_pdcpdx_path)
+          fwriteNonEmptyOrStop(batch_pdcpdx, batch_pdcpdx_path, "batch_pdcpdx")
         } else {
           notifyStageSkipped("stage 01", batch_pdcpdx_path)
           batch_pdcpdx <- readWorkflowCsv(batch_pdcpdx_path)
@@ -377,9 +401,9 @@ runMetaWorkflow <- function(drug,
           pdcpdx = mRNA_pdcpdx_sig
         )
 
-        data.table::fwrite(mRNA_cell_sig, mRNA_cell_sig_path)
-        data.table::fwrite(mRNA_pdcpdx_sig, mRNA_pdcpdx_sig_path)
-        data.table::fwrite(selected_genes, selected_genes_path)
+        fwriteNonEmptyOrStop(mRNA_cell_sig, mRNA_cell_sig_path, "mRNA_cell_sig")
+        fwriteNonEmptyOrStop(mRNA_pdcpdx_sig, mRNA_pdcpdx_sig_path, "mRNA_pdcpdx_sig")
+        fwriteNonEmptyOrStop(selected_genes, selected_genes_path, "selected_genes")
       }
 
       if (verbose) {
@@ -411,10 +435,14 @@ runMetaWorkflow <- function(drug,
           p_t = tcga_ad_p_t,
           preclinical_label = "ccle"
         )
-        data.table::fwrite(ad_stats, ad_stats_path)
+        fwriteNonEmptyOrStop(ad_stats, ad_stats_path, "selected_genes_ad_stats")
 
         selected_genes_ad_filtered <- ad_stats[ad_stats[["ccle_vs_tcga_concordant"]] == TRUE, ]
-        data.table::fwrite(selected_genes_ad_filtered, ad_filtered_path)
+        fwriteNonEmptyOrStop(
+          selected_genes_ad_filtered,
+          ad_filtered_path,
+          "selected_genes_ad_filtered"
+        )
       }
 
       if (verbose) {
@@ -480,8 +508,8 @@ runMetaWorkflow <- function(drug,
           final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
         }
 
-        data.table::fwrite(clinical_sig, clinical_sig_path)
-        data.table::fwrite(final_biomarkers, final_biomarkers_path)
+        fwriteNonEmptyOrStop(clinical_sig, clinical_sig_path, "clinical_sig")
+        fwriteNonEmptyOrStop(final_biomarkers, final_biomarkers_path, "final_biomarkers")
       }
 
       if (verbose) {
