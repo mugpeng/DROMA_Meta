@@ -43,20 +43,19 @@ eligible_pair_flags <- eligible_pairs[
 eligible_pairs_run <- unique(eligible_pairs[, .(drug, tumor_type)])
 
 db_path <- defaults$droma_db_path
-# db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
 ctrdb_path <- defaults$ctrdb_path
-# ctrdb_path <- "/home/data/denglab/bigData/DROMA/ctrdb.sqlite"
-
 tcga_rna_counts_dir <- defaults$tcga_rna_counts_dir
-# tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
-
 gene_probe_map_path <- defaults$gene_probe_map_path
-# gene_probe_map_path <- "/Users/peng/Desktop/Project/DROMA/Data/gencode.human.v49.annotation.gene.probeMap"
+
+# db_path <- "/home/data/denglab/bigData/DROMA/droma.sqlite"
+# ctrdb_path <- "/home/data/denglab/bigData/DROMA/ctrdb.sqlite"
+# tcga_rna_counts_dir <- "/home/data/denglab/bigData/DROMA/rna_counts"
+# gene_probe_map_path <- "/home/data/denglab/bigData/DROMA/gencode.human.v49.annotation.gene.probeMap"
 output_base <- defaults$output_base
 
 feature2_type <- "mRNA"
 data_type <- "all"
-cores <- 4
+cores <- 32
 
 cell_min_intersected_cells <- 10
 pdcpdx_min_intersected_cells <- 5
