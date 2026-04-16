@@ -9,11 +9,13 @@ library(DROMA.Set)
 library(DROMA.R)
 
 db_path <- "/Users/peng/Desktop/Project/DROMA/Data/droma.sqlite"
-output_base <- "/Users/peng/Desktop/Project/DROMA/Meta_project3/workflow/Output"
+project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+defaults <- getMetaWorkflowDefaults(project_root = project_root)
+output_base <- defaults$output_base
 dir.create(output_base, showWarnings = FALSE, recursive = TRUE)
 
 cell_n_datasets_t <- 3
-pdcpdx_n_datasets_t <- 2
+pdcpdx_n_datasets_t <- 1
 
 cat("\n=== 00: Eligible Drug And Tumor Type ===\n")
 
@@ -67,7 +69,7 @@ cell_eligible_pairs <- candidate_pairs[
   )
 ]
 
-eligible_pairs_pdcpdx_ge_2 <- cell_eligible_pairs[
+eligible_pairs <- cell_eligible_pairs[
   vapply(
     seq_len(.N),
     function(i) {
@@ -83,7 +85,7 @@ eligible_pairs_pdcpdx_ge_2 <- cell_eligible_pairs[
             dataset_types = c("PDO", "PDX"),
             drug = drug_i,
             tumor_type = tumor_type_i,
-            min_project_count = 2
+            min_project_count = pdcpdx_n_datasets_t
           )
           TRUE
         },
@@ -94,47 +96,9 @@ eligible_pairs_pdcpdx_ge_2 <- cell_eligible_pairs[
   )
 ]
 
-remaining_pairs <- cell_eligible_pairs[
-  !eligible_pairs_pdcpdx_ge_2,
-  on = c("drug", "tumor_type")
-]
-
-eligible_pairs_pdcpdx_eq_1 <- remaining_pairs[
-  vapply(
-    seq_len(.N),
-    function(i) {
-      drug_i <- remaining_pairs$drug[[i]]
-      tumor_type_i <- remaining_pairs$tumor_type[[i]]
-
-      tryCatch(
-        {
-          filterProjectsForDrugTumor(
-            project_anno = project_anno,
-            drug_anno = drug_anno,
-            sample_anno = sample_anno,
-            dataset_types = c("PDO", "PDX"),
-            drug = drug_i,
-            tumor_type = tumor_type_i,
-            min_project_count = 1
-          )
-          TRUE
-        },
-        error = function(e) FALSE
-      )
-    },
-    logical(1)
-  )
-]
-
-fwrite(
-  eligible_pairs_pdcpdx_ge_2,
-  file.path(output_base, "eligible_drug_tumor_pairs_pdcpdx_ge_2.csv")
-)
-fwrite(
-  eligible_pairs_pdcpdx_eq_1,
-  file.path(output_base, "eligible_drug_tumor_pairs_pdcpdx_eq_1.csv")
-)
+eligible_pairs_path <- file.path(output_base, "eligible_drug_tumor_pairs.csv")
+fwrite(eligible_pairs, eligible_pairs_path)
 
 cat(sprintf("  OK cell_eligible_pairs: %d\n", nrow(cell_eligible_pairs)))
-cat(sprintf("  OK eligible_pairs_pdcpdx_ge_2: %d\n", nrow(eligible_pairs_pdcpdx_ge_2)))
-cat(sprintf("  OK eligible_pairs_pdcpdx_eq_1: %d\n", nrow(eligible_pairs_pdcpdx_eq_1)))
+cat(sprintf("  OK eligible_pairs (PDO/PDX min_project_count = %d): %d\n", pdcpdx_n_datasets_t, nrow(eligible_pairs)))
+cat(sprintf("  Wrote: %s\n", eligible_pairs_path))

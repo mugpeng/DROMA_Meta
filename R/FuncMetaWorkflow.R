@@ -184,6 +184,7 @@ runMetaWorkflow <- function(drug,
   ad_filtered_path <- file.path(output_dir, "selected_genes_ad_filtered.csv")
   clinical_sig_path <- file.path(output_dir, "clinical_sig_mRNA.csv")
   final_biomarkers_path <- file.path(output_dir, "final_biomarkers.csv")
+  clinical_info_path <- file.path(output_dir, "clinical_validation_info.csv")
 
   stageFilesExist <- function(...) {
     all(file.exists(c(...)))
@@ -451,26 +452,48 @@ runMetaWorkflow <- function(drug,
         cat("\n=== 04: Clinical Validation ===\n")
       }
 
-      if (!override && stageFilesExist(clinical_sig_path, final_biomarkers_path)) {
-        notifyStageSkipped("stage 04", c(clinical_sig_path, final_biomarkers_path))
+      if (!override && stageFilesExist(clinical_sig_path, final_biomarkers_path, clinical_info_path)) {
+        notifyStageSkipped("stage 04", c(clinical_sig_path, final_biomarkers_path, clinical_info_path))
         clinical_sig <- readWorkflowCsv(clinical_sig_path)
         final_biomarkers <- readWorkflowCsv(final_biomarkers_path)
+        clinical_info <- readWorkflowCsv(clinical_info_path)
+        ctrdb_status <- fallbackIfMissing(clinical_info$ctrdb_status[[1]], NA_character_)
+        ctrdb_fallback <- fallbackIfMissing(clinical_info$ctrdb_fallback[[1]], NA)
       } else {
         connectCTRDatabase(ctrdb_path)
 
-        clinical_batch <- tryCatch(
-          batchFindClinicalSigResponse(
-            select_omics = unique(selected_genes_ad_filtered$name),
-            select_drugs = drug,
-            data_type = data_type,
-            tumor_type = tumor_type,
-            cores = cores
-          ),
-          error = function(e) {
-            warning("Clinical validation returned no usable result: ", e$message, call. = FALSE)
-            createEmptyMetaDf()
+        fetchClinicalBatch <- function(query_tumor_type) {
+          tryCatch(
+            batchFindClinicalSigResponse(
+              select_omics = unique(selected_genes_ad_filtered$name),
+              select_drugs = drug,
+              data_type = data_type,
+              tumor_type = query_tumor_type,
+              cores = cores
+            ),
+            error = function(e) {
+              createEmptyMetaDf()
+            }
+          )
+        }
+
+        clinical_batch <- fetchClinicalBatch(tumor_type)
+        ctrdb_status <- "tumor_type_matched"
+        ctrdb_fallback <- FALSE
+        clinical_query_tumor_type <- tumor_type
+
+        if (nrow(clinical_batch) == 0L) {
+          clinical_batch <- fetchClinicalBatch("all")
+          clinical_query_tumor_type <- "all"
+
+          if (nrow(clinical_batch) > 0L) {
+            ctrdb_status <- "fallback_all"
+            ctrdb_fallback <- TRUE
+          } else {
+            ctrdb_status <- "no_ctrdb_data"
+            ctrdb_fallback <- FALSE
           }
-        )
+        }
 
         if (nrow(clinical_batch) > 0) {
           clinical_sig <- getSignificantFeatures(
@@ -481,7 +504,7 @@ runMetaWorkflow <- function(drug,
             n_datasets_t = clinical_n_datasets_t
           )
         } else {
-          clinical_sig <- data.frame(name = character(0), stringsAsFactors = FALSE)
+          clinical_sig <- createEmptyMetaDf()
         }
 
         if (nrow(selected_genes_ad_filtered) > 0 && nrow(clinical_sig) > 0) {
@@ -503,13 +526,29 @@ runMetaWorkflow <- function(drug,
                 final_biomarkers[, cols_to_remove] <- NULL
               }
             }
+
+            final_biomarkers$ctrdb_fallback <- ctrdb_fallback
+            final_biomarkers$ctrdb_status <- ctrdb_status
+          } else {
+            final_biomarkers <- createEmptyFinalBiomarkersDf()
           }
         } else {
-          final_biomarkers <- data.frame(name = character(0), stringsAsFactors = FALSE)
+          final_biomarkers <- createEmptyFinalBiomarkersDf()
         }
 
-        fwriteNonEmptyOrStop(clinical_sig, clinical_sig_path, "clinical_sig")
-        fwriteNonEmptyOrStop(final_biomarkers, final_biomarkers_path, "final_biomarkers")
+        clinical_info <- data.table::data.table(
+          drug = drug,
+          tumor_type = tumor_type,
+          ctrdb_status = ctrdb_status,
+          ctrdb_fallback = ctrdb_fallback,
+          clinical_query_tumor_type = clinical_query_tumor_type,
+          n_clinical_sig = nrow(clinical_sig),
+          n_final_biomarkers = nrow(final_biomarkers)
+        )
+
+        data.table::fwrite(clinical_sig, clinical_sig_path)
+        data.table::fwrite(final_biomarkers, final_biomarkers_path)
+        data.table::fwrite(clinical_info, clinical_info_path)
       }
 
       if (verbose) {
@@ -523,6 +562,8 @@ runMetaWorkflow <- function(drug,
         output_dir = output_dir,
         status = "success",
         error_message = NA_character_,
+        ctrdb_status = ctrdb_status,
+        ctrdb_fallback = ctrdb_fallback,
         n_batch_cell = nrow(batch_cell),
         n_batch_pdcpdx = nrow(batch_pdcpdx),
         n_selected_genes = nrow(selected_genes),
@@ -542,6 +583,8 @@ runMetaWorkflow <- function(drug,
         output_dir = output_dir,
         status = "failed",
         error_message = conditionMessage(e),
+        ctrdb_status = NA_character_,
+        ctrdb_fallback = NA,
         n_batch_cell = NA_integer_,
         n_batch_pdcpdx = NA_integer_,
         n_selected_genes = NA_integer_,

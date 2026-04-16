@@ -1,7 +1,7 @@
 Package: DROMA.Meta
 Title: Drug Response and Omics Multi-step Meta Workflow
-Version: 0.1.0
-Date: 2026-04-15
+Version: 0.1.5
+Date: 2026-04-16
 Authors@R:
     person("Peng Yu", "Zhong", email = "yc47680@um.edu.mo", role = c("aut", "cre"))
 Description: DROMA.Meta wraps a four-step biomarker discovery workflow across

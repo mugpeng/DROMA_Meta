@@ -41,3 +41,21 @@ createEmptyMetaDf <- function() {
     stringsAsFactors = FALSE
   )
 }
+
+#' Create an Empty Final-biomarker Result Frame
+#'
+#' @description Builds an empty result data frame for the final biomarker export
+#' so downstream scripts can still read headers when no biomarker survives.
+#' @return A zero-row data.frame with standard final-biomarker columns.
+#' @export
+createEmptyFinalBiomarkersDf <- function() {
+  data.frame(
+    name = character(0),
+    drug = character(0),
+    tumor_type = character(0),
+    direction = character(0),
+    ctrdb_fallback = logical(0),
+    ctrdb_status = character(0),
+    stringsAsFactors = FALSE
+  )
+}
