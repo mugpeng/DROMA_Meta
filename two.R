@@ -1,75 +1,87 @@
-fallback_if_missing <- function(x, y) {
-  if (is.null(x) || length(x) == 0 || !nzchar(as.character(x[[1]]))) y else x[[1]]
-}
-
-cmd_args <- commandArgs(trailingOnly = FALSE)
-file_arg <- grep("^--file=", cmd_args, value = TRUE)
-script_path <- sub("^--file=", "", fallback_if_missing(file_arg[1], ""))
-script_dir <- if (nzchar(script_path)) dirname(normalizePath(script_path, mustWork = TRUE)) else getwd()
-root_dir <- normalizePath(script_dir, mustWork = TRUE)
-
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(DROMA.Meta))
 
-source(file.path(root_dir, "R", "FuncHelper.R"))
-source(file.path(root_dir, "R", "FuncMetaWorkflow.R"))
-
-project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+# project_root <- file.path(normalizePath(getwd(), mustWork = TRUE), "Meta_Example")
+project_root <- normalizePath(getwd(), mustWork = TRUE)
 defaults <- getMetaWorkflowDefaults(project_root = project_root)
 
+# Driver-level input and output locations. Keep these runtime choices here so
+# the files under R/ remain reusable pure function definitions.
+output_base_batch <- file.path(defaults$output_base, "meta_batch")
+summary_csv <- file.path(output_base_batch, "meta_workflow_batch_summary.csv")
+annotation_summary_csv <- file.path(output_base_batch, "pair_biomarker_annotation_summary.csv")
+
+# Batch-annotation parameters. Edit these values in the script when you want to
+# change how the annotation summary is built.
 pdcpdx_es_t <- 0.1
 pdcpdx_P_t <- 0.05
 pdcpdx_ge_2_n_datasets_t <- 2
 
-batch_roots <- c(file.path(defaults$output_base, "meta_batch"))
+summary_dt <- data.table::fread(summary_csv, data.table = TRUE)
+batch_results <- vector("list", nrow(summary_dt))
 
-listPairDirs <- function(batch_root) {
-  drug_dirs <- list.dirs(batch_root, recursive = FALSE, full.names = TRUE)
-  unlist(lapply(drug_dirs, function(drug_dir) {
-    list.dirs(drug_dir, recursive = FALSE, full.names = TRUE)
-  }), use.names = FALSE)
-}
-
-readMaybe <- function(path) {
-  if (!file.exists(path)) {
-    return(NULL)
+for (i in seq_len(nrow(summary_dt))) {
+  summary_row <- summary_dt[i]
+  output_dir <- if ("output_dir" %in% names(summary_row) &&
+    !is.na(summary_row$output_dir[[1]]) &&
+    nzchar(summary_row$output_dir[[1]])) {
+    summary_row$output_dir[[1]]
+  } else {
+    getMetaWorkflowOutputDir(
+      drug = summary_row$drug[[1]],
+      tumor_type = summary_row$tumor_type[[1]],
+      output_base = output_base_batch
+    )
   }
-  data.table::fread(path)
-}
 
-annotatePair <- function(output_dir, summary_dt = NULL) {
   final_path <- file.path(output_dir, "final_biomarkers.csv")
+  if (!file.exists(final_path)) {
+    next
+  }
+
   annotated_path <- file.path(output_dir, "final_biomarkers_annotated.csv")
   batch_pdcpdx_path <- file.path(output_dir, "batch_pdcpdx_sets_mRNA.csv")
   clinical_info_path <- file.path(output_dir, "clinical_validation_info.csv")
 
-  final_biomarkers <- readMaybe(final_path)
-  if (is.null(final_biomarkers)) {
-    return(NULL)
+  final_biomarkers <- data.table::fread(final_path, data.table = TRUE)
+  clinical_info <- if (file.exists(clinical_info_path)) {
+    data.table::fread(clinical_info_path, data.table = TRUE)
+  } else {
+    NULL
+  }
+  batch_pdcpdx <- if (file.exists(batch_pdcpdx_path)) {
+    data.table::fread(batch_pdcpdx_path, data.table = TRUE)
+  } else {
+    NULL
   }
 
-  clinical_info <- readMaybe(clinical_info_path)
-  summary_row <- NULL
-  if (!is.null(summary_dt) && "output_dir" %in% names(summary_dt)) {
-    summary_row <- summary_dt[summary_dt$output_dir == output_dir]
-    if (!nrow(summary_row)) {
-      summary_row <- NULL
-    }
+  ctrdb_status_value <- if (!is.null(clinical_info) &&
+    nrow(clinical_info) > 0 &&
+    "ctrdb_status" %in% names(clinical_info) &&
+    !is.na(clinical_info$ctrdb_status[[1]]) &&
+    nzchar(as.character(clinical_info$ctrdb_status[[1]]))) {
+    as.character(clinical_info$ctrdb_status[[1]])
+  } else if ("ctrdb_status" %in% names(summary_row) &&
+    !is.na(summary_row$ctrdb_status[[1]]) &&
+    nzchar(as.character(summary_row$ctrdb_status[[1]]))) {
+    as.character(summary_row$ctrdb_status[[1]])
+  } else {
+    NA_character_
   }
 
-  ctrdb_status_value <- NA_character_
-  ctrdb_fallback_value <- NA
-
-  if (!is.null(clinical_info) && nrow(clinical_info) > 0) {
-    ctrdb_status_value <- fallback_if_missing(clinical_info$ctrdb_status, NA_character_)
-    ctrdb_fallback_value <- fallback_if_missing(clinical_info$ctrdb_fallback, NA)
-  } else if (!is.null(summary_row)) {
-    ctrdb_status_value <- fallback_if_missing(summary_row$ctrdb_status, NA_character_)
-    ctrdb_fallback_value <- fallback_if_missing(summary_row$ctrdb_fallback, NA)
+  ctrdb_fallback_value <- if (!is.null(clinical_info) &&
+    nrow(clinical_info) > 0 &&
+    "ctrdb_fallback" %in% names(clinical_info) &&
+    !is.na(clinical_info$ctrdb_fallback[[1]])) {
+    as.logical(clinical_info$ctrdb_fallback[[1]])
+  } else if ("ctrdb_fallback" %in% names(summary_row) &&
+    !is.na(summary_row$ctrdb_fallback[[1]])) {
+    as.logical(summary_row$ctrdb_fallback[[1]])
+  } else {
+    NA
   }
 
   pdcpdx_ge_2_names <- character(0)
-  batch_pdcpdx <- readMaybe(batch_pdcpdx_path)
   if (!is.null(batch_pdcpdx) && nrow(batch_pdcpdx) > 0) {
     pdcpdx_sig_ge_2 <- getSignificantFeatures(
       batch_pdcpdx,
@@ -83,47 +95,23 @@ annotatePair <- function(output_dir, summary_dt = NULL) {
     }
   }
 
-  if (!"ctrdb_status" %in% names(final_biomarkers)) {
-    final_biomarkers[, ctrdb_status := ctrdb_status_value]
-  } else if (nrow(final_biomarkers) > 0) {
-    final_biomarkers[, ctrdb_status := ctrdb_status_value]
-  }
-
-  if (!"ctrdb_fallback" %in% names(final_biomarkers)) {
-    final_biomarkers[, ctrdb_fallback := ctrdb_fallback_value]
-  } else if (nrow(final_biomarkers) > 0) {
-    final_biomarkers[, ctrdb_fallback := ctrdb_fallback_value]
-  }
-
-  if ("name" %in% names(final_biomarkers)) {
-    final_biomarkers[, pdcpdx_ge_2 := name %in% pdcpdx_ge_2_names]
-  } else {
-    final_biomarkers[, pdcpdx_ge_2 := logical(.N)]
-  }
-
+  final_biomarkers[, ctrdb_status := ctrdb_status_value]
+  final_biomarkers[, ctrdb_fallback := ctrdb_fallback_value]
+  final_biomarkers[, pdcpdx_ge_2 := "name" %in% names(final_biomarkers) & name %in% pdcpdx_ge_2_names]
   data.table::fwrite(final_biomarkers, annotated_path)
 
   drug_value <- if ("drug" %in% names(final_biomarkers) && nrow(final_biomarkers) > 0) {
     final_biomarkers$drug[[1]]
-  } else if (!is.null(clinical_info) && "drug" %in% names(clinical_info) && nrow(clinical_info) > 0) {
-    clinical_info$drug[[1]]
-  } else if (!is.null(summary_row)) {
-    summary_row$drug[[1]]
   } else {
-    basename(dirname(output_dir))
+    summary_row$drug[[1]]
   }
-
   tumor_value <- if ("tumor_type" %in% names(final_biomarkers) && nrow(final_biomarkers) > 0) {
     final_biomarkers$tumor_type[[1]]
-  } else if (!is.null(clinical_info) && "tumor_type" %in% names(clinical_info) && nrow(clinical_info) > 0) {
-    clinical_info$tumor_type[[1]]
-  } else if (!is.null(summary_row)) {
-    summary_row$tumor_type[[1]]
   } else {
-    basename(output_dir)
+    summary_row$tumor_type[[1]]
   }
 
-  data.table(
+  batch_results[[i]] <- data.table::data.table(
     drug = drug_value,
     tumor_type = tumor_value,
     output_dir = output_dir,
@@ -135,25 +123,10 @@ annotatePair <- function(output_dir, summary_dt = NULL) {
   )
 }
 
-for (batch_root in batch_roots) {
-  if (!dir.exists(batch_root)) {
-    next
-  }
-
-  summary_path <- file.path(batch_root, "meta_workflow_batch_summary.csv")
-  summary_dt <- readMaybe(summary_path)
-  pair_dirs <- listPairDirs(batch_root)
-
-  annotation_rows <- Filter(
-    Negate(is.null),
-    lapply(pair_dirs, annotatePair, summary_dt = summary_dt)
-  )
-
-  if (length(annotation_rows) == 0L) {
-    next
-  }
-
-  annotation_dt <- rbindlist(annotation_rows, fill = TRUE)
-  fwrite(annotation_dt, file.path(batch_root, "pair_biomarker_annotation_summary.csv"))
-  print(annotation_dt)
+annotation_dt <- if (length(Filter(Negate(is.null), batch_results))) {
+  data.table::rbindlist(batch_results, fill = TRUE)
+} else {
+  data.table::data.table()
 }
+data.table::fwrite(annotation_dt, annotation_summary_csv)
+print(annotation_dt)

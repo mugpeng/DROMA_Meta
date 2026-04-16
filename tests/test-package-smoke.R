@@ -12,6 +12,8 @@ required_files <- c(
   file.path(root_dir, "DESCRIPTION"),
   file.path(root_dir, "NAMESPACE"),
   file.path(root_dir, "one.R"),
+  file.path(root_dir, "two.R"),
+  file.path(root_dir, "two_bk.R"),
   file.path(root_dir, "R", "FuncHelper.R"),
   file.path(root_dir, "R", "FuncValidCheck.R"),
   file.path(root_dir, "R", "FuncTcgaAD.R"),
@@ -55,6 +57,30 @@ stopifnot(any(grepl("cores <-", one_lines, fixed = TRUE)))
 stopifnot(any(grepl("cell_min_intersected_cells <-", one_lines, fixed = TRUE)))
 stopifnot(any(grepl("pdcpdx_min_intersected_cells <-", one_lines, fixed = TRUE)))
 stopifnot(any(grepl("pdcpdx_n_datasets_t <- 1", one_lines, fixed = TRUE)))
+
+two_lines <- readLines(file.path(root_dir, "two.R"), warn = FALSE)
+stopifnot(any(grepl("library(DROMA.Meta)", two_lines, fixed = TRUE)))
+stopifnot(any(grepl("summary_csv <-", two_lines, fixed = TRUE)))
+stopifnot(any(grepl("annotation_summary_csv <-", two_lines, fixed = TRUE)))
+stopifnot(any(grepl("summary_dt <- data.table::fread", two_lines, fixed = TRUE)))
+stopifnot(any(grepl("for \\(i in seq_len\\(nrow\\(summary_dt\\)\\)\\)", two_lines)))
+stopifnot(any(grepl("final_biomarkers_annotated.csv", two_lines, fixed = TRUE)))
+stopifnot(any(grepl("pair_biomarker_annotation_summary.csv", two_lines, fixed = TRUE)))
+stopifnot(!any(grepl("annotatePair <- function", two_lines, fixed = TRUE)))
+
+two_bk_lines <- readLines(file.path(root_dir, "two_bk.R"), warn = FALSE)
+stopifnot(any(grepl("eligible_pairs_csv <-", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("summary_csv <-", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("# 01: Load driver pair table", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("# 02: Annotate pair outputs", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("# 03: Write backup annotation summary", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("file.exists(summary_csv)", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("data.table::fread(eligible_pairs_csv", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("batch_driver_source", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("missing_output_dir", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("missing_final_biomarkers", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("empty_final_biomarkers", two_bk_lines, fixed = TRUE)))
+stopifnot(any(grepl("unreadable_final_biomarkers", two_bk_lines, fixed = TRUE)))
 
 suppressPackageStartupMessages(library(DROMA.Meta))
 
